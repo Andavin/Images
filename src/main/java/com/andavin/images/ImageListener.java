@@ -14,7 +14,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.hanging.HangingBreakByEntityEvent;
@@ -131,31 +130,6 @@ public final class ImageListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBreak(final HangingBreakByEntityEvent event) {
         this.onBreak((HangingBreakEvent) event);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBreak(final BlockBreakEvent event) {
-
-        final Location loc = event.getBlock().getLocation();
-        if (Images.getImage(loc) != null) {
-            event.setCancelled(true);
-        } else {
-
-            for (final BlockFace face : FACES) {
-
-                final Location clone = loc.clone().add(face.getModX(), face.getModY(), face.getModZ());
-                if (Images.getImage(clone) != null) {
-                    event.setCancelled(true);
-                    break;
-                }
-            }
-        }
-
-        //noinspection IsCancelled
-        if (event.isCancelled()) {
-            final Player player = event.getPlayer();
-            player.sendMessage("§cCannot break that block!");
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
