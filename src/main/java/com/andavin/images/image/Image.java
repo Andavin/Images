@@ -88,7 +88,11 @@ public final class Image implements ConfigurationSerializable {
                 loc.getWorld().getNearbyEntities(loc, 1, 1, 1).forEach(entity -> {
 
                     if (entity instanceof ItemFrame) {
-                        entity.remove();
+
+                        final Location loc1 = entity.getLocation();
+                        if (loc1.getBlockX() == loc.getBlockX() && loc1.getBlockY() == loc.getBlockY() && loc1.getBlockZ() == loc.getBlockZ()) {
+                            entity.remove();
+                        }
                     }
                 })
         ));

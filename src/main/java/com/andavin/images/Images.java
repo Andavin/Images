@@ -202,8 +202,8 @@ public final class Images extends JavaPlugin {
                     try {
                         frame = loc.getWorld().spawn(relLoc, ItemFrame.class);
                     } catch (IllegalArgumentException e) {
+                        Logger.warn("Attempted to place an image where there wasn't space for it.");
                         newImage.destroy();
-                        Logger.warn(e);
                         return null;
                     }
 
@@ -283,8 +283,8 @@ public final class Images extends JavaPlugin {
             final int ySections = image.getHeight() / PIXELS_PER_FRAME;
             final BufferedImage finalImage = Images.resize(image, xSections, ySections);
 
-            final AtomicBoolean save = new AtomicBoolean();
             Images.images.add(loadedImage);
+            final AtomicBoolean save = new AtomicBoolean();
             loadedImage.getSections().removeIf(section -> {
 
                 Logger.debug("Getting the map with ID {}.", section.getId());
