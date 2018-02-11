@@ -182,6 +182,10 @@ public final class Images extends JavaPlugin {
         try {
 
             BufferedImage image = ImageIO.read(imageFile);
+            if (image.getWidth() < PIXELS_PER_FRAME || image.getHeight() < PIXELS_PER_FRAME) {
+                throw new IllegalArgumentException("§cThe image §l" + imageFile.getName() + "§c is too small! Must be at least 128x128 pixels.");
+            }
+
             final int xSections = image.getWidth() / PIXELS_PER_FRAME;
             final int ySections = image.getHeight() / PIXELS_PER_FRAME;
             image = Images.resize(image, xSections, ySections);
@@ -238,7 +242,7 @@ public final class Images extends JavaPlugin {
             return newImage;
         } catch (IOException e) {
             Logger.severe(e);
-            return null;
+            throw new IllegalArgumentException("§cCould not read that image file! Check that it is a picture.");
         }
     }
 

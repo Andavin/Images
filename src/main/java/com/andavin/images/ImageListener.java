@@ -68,9 +68,16 @@ public final class ImageListener implements Listener {
         }
 
         player.removeMetadata(ImageCommand.CREATE_META, Images.getInstance());
-        final Image image = Images.createAndStoreImage(imageFile, event.getClickedBlock().getRelative(event.getBlockFace()), event.getBlockFace());
-        if (image == null) {
-            player.sendMessage("§cFailed to create the image §l" + imageFile.getName() + "§c at that location.");
+        try {
+
+            final Image image = Images.createAndStoreImage(imageFile, event.getClickedBlock().getRelative(event.getBlockFace()), event.getBlockFace());
+            if (image == null) {
+                player.sendMessage("§cFailed to create the image §l" + imageFile.getName() + "§c at that location.");
+                return;
+            }
+        } catch (IllegalArgumentException e) {
+            player.sendMessage("§cFailed to create image.");
+            player.sendMessage(e.getMessage());
             return;
         }
 
