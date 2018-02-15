@@ -5,7 +5,6 @@ import com.andavin.images.image.Image;
 import com.andavin.images.util.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.ItemFrame;
@@ -30,8 +29,6 @@ import java.io.IOException;
  * @author Andavin
  */
 public final class ImageListener implements Listener {
-
-    private static final BlockFace[] FACES = { BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST };
 
     @EventHandler
     public void onInteract(final PlayerInteractEvent event) {
