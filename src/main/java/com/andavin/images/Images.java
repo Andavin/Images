@@ -4,6 +4,7 @@ import com.andavin.images.command.CmdRegistry;
 import com.andavin.images.image.Image;
 import com.andavin.images.image.ImageSection;
 import com.andavin.images.util.Logger;
+import com.andavin.images.util.Reflection;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -16,6 +17,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.MapMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
@@ -34,7 +36,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({ "unchecked", "ResultOfMethodCallIgnored", "deprecation" })
+@SuppressWarnings({ "unchecked", "ResultOfMethodCallIgnored" })
 public final class Images extends JavaPlugin {
 
     private static final int PIXELS_PER_FRAME = 128;
@@ -43,7 +45,7 @@ public final class Images extends JavaPlugin {
     public static final String[] EXTENSIONS = { PNG, JPEG, JPG };
 
     private static Images instance;
-    private static List<Image> images = new LinkedList<>();
+    private static final List<Image> images = new LinkedList<>();
 
     @Override
     public void onEnable() {
@@ -233,7 +235,14 @@ public final class Images extends JavaPlugin {
                         }
                     });
 
-                    frame.setItem(new ItemStack(Material.MAP, 1, view.getId()));
+                    final ItemStack item = new ItemStack(Material.MAP, 1, view.getId());
+                    if (Reflection.VERSION_NUMBER >= 1131) { // Check for 1.13 or greater
+                        final MapMeta meta = (MapMeta) item.getItemMeta();
+                        meta.setMapId(view.getId());
+                        item.setItemMeta(meta);
+                    }
+
+                    frame.setItem(item);
                     newImage.addSection(view.getId(), x, y, relLoc);
                 }
             }
