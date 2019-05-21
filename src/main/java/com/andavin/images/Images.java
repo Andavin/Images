@@ -37,7 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({ "ConstantConditions", "deprecation" })
+@SuppressWarnings("ConstantConditions")
 public final class Images extends JavaPlugin {
 
     private static final int PIXELS_PER_FRAME = 128;
@@ -60,14 +60,20 @@ public final class Images extends JavaPlugin {
         ConfigurationSerialization.registerClass(Image.class);
         ConfigurationSerialization.registerClass(ImageSection.class);
 
-        File dataFile = new File(this.getDataFolder(), FILE);
-        if (dataFile.exists()) {
-            // Load all the images in
-            Logger.info("Loading images...");
-            FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
-            List<Image> images = (List<Image>) data.get(PATH);
-            images.forEach(this::load);
-            Logger.info("Loaded {} images.", Images.images.size());
+        File folder = this.getDataFolder();
+        if (folder.exists()) {
+
+            File dataFile = new File(folder, FILE);
+            if (dataFile.exists()) {
+                // Load all the images in
+                Logger.info("Loading images...");
+                FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+                List<Image> images = (List<Image>) data.get(PATH);
+                images.forEach(this::load);
+                Logger.info("Loaded {} images.", Images.images.size());
+            }
+        } else {
+            folder.mkdirs();
         }
     }
 
