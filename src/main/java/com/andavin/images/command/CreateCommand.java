@@ -6,7 +6,7 @@ import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -35,7 +35,7 @@ final class CreateCommand extends BaseCommand {
         this.setDesc("Create or load a new image into the game (name must not contain spaces).");
 
         if (Reflection.VERSION_NUMBER < 1120) {
-            final Object comp = Reflection.getInstance(Reflection.getMcClass("ChatComponentText"), "§eClick where the top left corner should be");
+            Object comp = Reflection.getInstance(Reflection.getMcClass("ChatComponentText"), "§eClick where the top left corner should be");
             this.packet = Reflection.getInstance(ImageCommand.PACKET, comp, (byte) 2);
         } else {
             this.packet = null;
@@ -43,15 +43,15 @@ final class CreateCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(final Player player, final String label, final String[] args) {
+    public void execute(Player player, String label, String[] args) {
 
-        final StringBuilder sb = new StringBuilder();
-        for (final String arg : args) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : args) {
             sb.append(arg).append(' ');
         }
 
-        final String image = this.appendExtension(sb.substring(0, sb.length() - 1));
-        final File file = Images.getImage(image);
+        String image = this.appendExtension(sb.substring(0, sb.length() - 1));
+        File file = Images.getImage(image);
         if (file.exists()) {
 
             player.setMetadata(ImageCommand.CREATE_META, new FixedMetadataValue(Images.getInstance(), file));
@@ -59,11 +59,11 @@ final class CreateCommand extends BaseCommand {
 
             Object connection = null;
             if (Reflection.VERSION_NUMBER < 1120) {
-                final Object entityPlayer = Reflection.invokeMethod(ImageCommand.GET_HANDLE, player);
+                Object entityPlayer = Reflection.invokeMethod(ImageCommand.GET_HANDLE, player);
                 connection = Reflection.getValue(ImageCommand.CONNECTION, entityPlayer);
             }
 
-            final Object finalConn = connection;
+            Object finalConn = connection;
             new BukkitRunnable() {
 
                 @Override
@@ -87,13 +87,13 @@ final class CreateCommand extends BaseCommand {
     }
 
     @Override
-    public void tabComplete(final CommandSender sender, final String[] args, final List<String> completions) {
+    public void tabComplete(CommandSender sender, String[] args, List<String> completions) {
 
         if (args.length == 1) {
 
             Images.getImageFiles().forEach(file -> {
 
-                final String name = file.getName();
+                String name = file.getName();
                 if (StringUtils.startsWithIgnoreCase(name, args[0])) {
                     completions.add(name);
                 }
@@ -102,28 +102,28 @@ final class CreateCommand extends BaseCommand {
     }
 
     @Override
-    public boolean hasPermission(final Player player, final String[] args) {
+    public boolean hasPermission(Player player, String[] args) {
         return player.hasPermission("image.manage.create");
     }
 
-    private String appendExtension(final String image) {
+    private String appendExtension(String image) {
 
-        for (final String extension : Images.EXTENSIONS) {
+        for (String extension : Images.EXTENSIONS) {
 
             if (image.endsWith(extension)) {
                 return image;
             }
         }
 
-        for (final File file : Images.getImageFiles()) {
+        for (File file : Images.getImageFiles()) {
 
-            final String name = file.getName();
+            String name = file.getName();
             if (!name.startsWith(image)) {
                 continue;
             }
 
-            final String extension = name.substring(name.indexOf('.'));
-            for (final String ext : Images.EXTENSIONS) {
+            String extension = name.substring(name.indexOf('.'));
+            for (String ext : Images.EXTENSIONS) {
 
                 if (extension.equalsIgnoreCase(ext)) {
                     return name;

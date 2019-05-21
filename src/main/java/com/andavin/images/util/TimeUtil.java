@@ -25,7 +25,7 @@ public final class TimeUtil {
      * @param toDate The date to format the difference to.
      * @return The formatted date string.
      */
-    public static String formatDifference(final long toDate) {
+    public static String formatDifference(long toDate) {
         return TimeUtil.formatDifference(toDate, false);
     }
 
@@ -38,7 +38,7 @@ public final class TimeUtil {
      * @param detailed Whether or not to include milliseconds.
      * @return The formatted date string.
      */
-    public static String formatDifference(final long toDate, final boolean detailed) {
+    public static String formatDifference(long toDate, boolean detailed) {
         return TimeUtil.formatDifference(System.currentTimeMillis(), toDate, detailed, true);
     }
 
@@ -49,7 +49,7 @@ public final class TimeUtil {
      * @param time The time to format.
      * @return The formatted time string.
      */
-    public static String formatTime(final long time) {
+    public static String formatTime(long time) {
         return TimeUtil.formatDifference(0, time, false, true);
     }
 
@@ -60,7 +60,7 @@ public final class TimeUtil {
      * @param date The unix date to format.
      * @return The formatted date string.
      */
-    public static String formatDate(final long date) {
+    public static String formatDate(long date) {
         return FORMAT.format(date);
     }
 
@@ -75,16 +75,16 @@ public final class TimeUtil {
      * @param shrink If the suffixes should be shrunk down (e.g. <tt>yr</tt> vs <tt>years</tt>).
      * @return The formatted date difference between the two times.
      */
-    public static String formatDifference(long fromDate, long toDate, final boolean detailed, final boolean shrink) {
+    public static String formatDifference(long fromDate, long toDate, boolean detailed, boolean shrink) {
 
         // Ensure fromDate is always <= toDate
         if (fromDate > toDate) {
-            final long temp = fromDate;
+            long temp = fromDate;
             fromDate = toDate;
             toDate = temp;
         }
 
-        final long diff = toDate - fromDate;
+        long diff = toDate - fromDate;
         if (diff < SECOND) {
             // If the time is less than a second then return 0 seconds or
             // if it's detailed then how many milliseconds are left
@@ -92,18 +92,18 @@ public final class TimeUtil {
                     "0" + TimeUtil.getUnitSuffix(SUFFIXES[0].length - 1, shrink, diff > 1);
         }
 
-        final StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < UNITS.length; i++) {
 
-            final long unit = UNITS[i];
-            final int unitsFound = TimeUtil.getDiff(unit, fromDate, toDate);
+            long unit = UNITS[i];
+            int unitsFound = TimeUtil.getDiff(unit, fromDate, toDate);
             if (unitsFound > 0) {
                 toDate -= unitsFound * unit;
                 sb.append(unitsFound).append(TimeUtil.getUnitSuffix(i, shrink, unitsFound > 1));
             }
         }
 
-        final long left = toDate - fromDate;
+        long left = toDate - fromDate;
         if (detailed && left > 0) {
 
             // Don't add a space unless the last one didn't have a space on it
@@ -134,12 +134,12 @@ public final class TimeUtil {
      * @param plural If the suffix should be for multiples.
      * @return The suffix for the unit with the given index.
      */
-    private static String getUnitSuffix(final int index, final boolean shrink, final boolean plural) {
+    private static String getUnitSuffix(int index, boolean shrink, boolean plural) {
         return 0 <= index && index < SUFFIXES[0].length ? SUFFIXES[shrink ? 0 : plural ? 1 : 2][index] :
                 shrink ? "ms" : plural ? "milliseconds" : "millisecond";
     }
 
-    private static int getDiff(final long unit, long fromDate, long toDate) {
+    private static int getDiff(long unit, long fromDate, long toDate) {
 
         // Should always be positive
         long diff = toDate - fromDate;

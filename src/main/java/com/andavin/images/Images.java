@@ -17,7 +17,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.MapMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.map.MapCanvas;
 import org.bukkit.map.MapRenderer;
 import org.bukkit.map.MapView;
@@ -26,17 +26,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.imageio.ImageIO;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@SuppressWarnings({ "unchecked", "ResultOfMethodCallIgnored" })
+@SuppressWarnings({ "ConstantConditions", "deprecation" })
 public final class Images extends JavaPlugin {
 
     private static final int PIXELS_PER_FRAME = 128;
@@ -44,8 +45,11 @@ public final class Images extends JavaPlugin {
     public static final String PNG = ".png", JPEG = ".jpeg", JPG = ".jpg";
     public static final String[] EXTENSIONS = { PNG, JPEG, JPG };
 
+    private static Field mapId;
+    private static Method viewId, getMap;
+
     private static Images instance;
-    private static final List<Image> images = new LinkedList<>();
+    private static final List<Image> images = new ArrayList<>();
 
     @Override
     public void onEnable() {
@@ -56,18 +60,14 @@ public final class Images extends JavaPlugin {
         ConfigurationSerialization.registerClass(Image.class);
         ConfigurationSerialization.registerClass(ImageSection.class);
 
-        final File dataFile = new File(this.getDataFolder(), FILE);
+        File dataFile = new File(this.getDataFolder(), FILE);
         if (dataFile.exists()) {
-
-            Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-
-                // Load all the images in
-                Logger.info("Loading images...");
-                final FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
-                final List<Image> images = (List<Image>) data.get(PATH);
-                images.forEach(this::load);
-                Logger.info("Loaded {} images.", Images.images.size());
-            });
+            // Load all the images in
+            Logger.info("Loading images...");
+            FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+            List<Image> images = (List<Image>) data.get(PATH);
+            images.forEach(this::load);
+            Logger.info("Loaded {} images.", Images.images.size());
         }
     }
 
@@ -88,7 +88,7 @@ public final class Images extends JavaPlugin {
      * @return The file (may not exist) with the name.
      */
     @Nonnull
-    public static File getImage(final String image) {
+    public static File getImage(String image) {
         return new File(Images.instance.getDataFolder(), image);
     }
 
@@ -100,9 +100,9 @@ public final class Images extends JavaPlugin {
      * @return The image at the location.
      */
     @Nullable
-    public static Image getImage(final Location loc) {
+    public static Image getImage(Location loc) {
 
-        for (final Image image : Images.images) {
+        for (Image image : Images.images) {
 
             if (image.getSection(loc) != null) {
                 return image;
@@ -121,17 +121,17 @@ public final class Images extends JavaPlugin {
     @Nonnull
     public static List<File> getImageFiles() {
 
-        final File file = Images.instance.getDataFolder();
-        final File[] files = file.listFiles();
+        File file = Images.instance.getDataFolder();
+        File[] files = file.listFiles();
         if (files == null) {
             return Collections.emptyList();
         }
 
-        final List<File> images = new ArrayList<>(files.length);
-        for (final File file1 : files) {
+        List<File> images = new ArrayList<>(files.length);
+        for (File file1 : files) {
 
-            final String path = file1.getPath();
-            for (final String extension : EXTENSIONS) {
+            String path = file1.getPath();
+            for (String extension : EXTENSIONS) {
 
                 if (path.endsWith(extension)) {
                     images.add(file1);
@@ -149,8 +149,8 @@ public final class Images extends JavaPlugin {
      */
     public static void save() throws IOException {
 
-        final File dataFolder = Images.instance.getDataFolder();
-        final File dataFile = new File(dataFolder, FILE);
+        File dataFolder = Images.instance.getDataFolder();
+        File dataFile = new File(dataFolder, FILE);
         if (!dataFile.exists()) {
 
             dataFile.getParentFile().mkdirs();
@@ -161,7 +161,7 @@ public final class Images extends JavaPlugin {
 
         // Load the data file and save all the images to it
         // The images will be serialized during the save process
-        final FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+        FileConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
         data.set(PATH, Images.images);
         data.save(dataFile);
     }
@@ -175,7 +175,7 @@ public final class Images extends JavaPlugin {
      * @return The newly created image or <tt>null</tt> if the creation failed.
      */
     @Nullable
-    static Image createAndStoreImage(final File imageFile, final Block block, final BlockFace face) {
+    static Image createAndStoreImage(File imageFile, Block block, BlockFace face) {
 
         if (face == BlockFace.DOWN || face == BlockFace.UP) {
             return null;
@@ -188,22 +188,22 @@ public final class Images extends JavaPlugin {
                 throw new IllegalArgumentException("§cThe image §l" + imageFile.getName() + "§c is too small! Must be at least 128x128 pixels.");
             }
 
-            final int xSections = image.getWidth() / PIXELS_PER_FRAME;
-            final int ySections = image.getHeight() / PIXELS_PER_FRAME;
+            int xSections = image.getWidth() / PIXELS_PER_FRAME;
+            int ySections = image.getHeight() / PIXELS_PER_FRAME;
             image = Images.resize(image, xSections, ySections);
 
-            final Location loc = block.getLocation();
-            final Image newImage = new Image(loc, imageFile);
-            final World world = block.getWorld();
+            Location loc = block.getLocation();
+            Image newImage = new Image(loc, imageFile);
+            World world = block.getWorld();
             for (int x = 0; x < xSections; x++) {
 
                 for (int y = 0; y < ySections; y++) {
 
                     // Place an item frame on the wall and put a map in it
                     // with the data of our image section
-                    final Location relLoc = loc.clone();
+                    Location relLoc = loc.clone();
                     Images.addRelative(relLoc, face, x, y);
-                    final ItemFrame frame;
+                    ItemFrame frame;
 
                     try {
                         frame = loc.getWorld().spawn(relLoc, ItemFrame.class);
@@ -215,9 +215,9 @@ public final class Images extends JavaPlugin {
 
 
                     // Create a new map and clear it's renderers
-                    final MapView view = Bukkit.createMap(world);
+                    MapView view = Bukkit.createMap(world);
                     view.getRenderers().forEach(view::removeRenderer); // No worry for concurrent modifications
-                    final BufferedImage section = image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
+                    BufferedImage section = image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
                             PIXELS_PER_FRAME, PIXELS_PER_FRAME);
 
                     // Add the new renderer for the single section
@@ -226,7 +226,7 @@ public final class Images extends JavaPlugin {
                         private boolean rendered;
 
                         @Override
-                        public void render(final MapView map, final MapCanvas canvas, final Player player) {
+                        public void render(MapView map, MapCanvas canvas, Player player) {
 
                             if (!this.rendered) {
                                 canvas.drawImage(0, 0, section);
@@ -235,15 +235,25 @@ public final class Images extends JavaPlugin {
                         }
                     });
 
-                    final ItemStack item = new ItemStack(Material.MAP, 1, view.getId());
+                    if (viewId == null) {
+                        viewId = Reflection.getMethod(MapView.class, "getId");
+                    }
+
+                    Number viewId = Reflection.invokeMethod(Images.viewId, view);
+                    ItemStack item = new ItemStack(Material.MAP, 1, viewId.shortValue());
                     if (Reflection.VERSION_NUMBER >= 1131) { // Check for 1.13 or greater
-                        final MapMeta meta = (MapMeta) item.getItemMeta();
-                        meta.setMapId(view.getId());
+
+                        if (mapId == null) {
+                            mapId = Reflection.getField(Reflection.getCraftClass("inventory.CraftMetaMap"), "mapId");
+                        }
+
+                        ItemMeta meta = item.getItemMeta();
+                        Reflection.setValue(mapId, meta, viewId);
                         item.setItemMeta(meta);
                     }
 
                     frame.setItem(item);
-                    newImage.addSection(view.getId(), x, y, relLoc);
+                    newImage.addSection(viewId.shortValue(), x, y, relLoc);
                 }
             }
 
@@ -261,7 +271,7 @@ public final class Images extends JavaPlugin {
      * @param player The player that is deleting the image.
      * @param image The image to delete.
      */
-    static void delete(final Player player, final Image image) {
+    static void delete(Player player, Image image) {
 
         Bukkit.getScheduler().runTaskAsynchronously(Images.instance, () -> {
 
@@ -280,7 +290,7 @@ public final class Images extends JavaPlugin {
         });
     }
 
-    private void load(final Image loadedImage) {
+    private void load(Image loadedImage) {
 
         Logger.debug("Loading {}...", loadedImage.getImageFile().getName());
         if (!loadedImage.getImageFile().exists()) {
@@ -292,23 +302,28 @@ public final class Images extends JavaPlugin {
 
             Logger.debug("Reading the file...");
             BufferedImage image = ImageIO.read(loadedImage.getImageFile());
-            final int xSections = image.getWidth() / PIXELS_PER_FRAME;
-            final int ySections = image.getHeight() / PIXELS_PER_FRAME;
-            final BufferedImage finalImage = Images.resize(image, xSections, ySections);
+            int xSections = image.getWidth() / PIXELS_PER_FRAME;
+            int ySections = image.getHeight() / PIXELS_PER_FRAME;
+            BufferedImage finalImage = Images.resize(image, xSections, ySections);
 
             Images.images.add(loadedImage);
-            final AtomicBoolean save = new AtomicBoolean();
+            AtomicBoolean save = new AtomicBoolean();
             loadedImage.getSections().removeIf(section -> {
 
                 Logger.debug("Getting the map with ID {}.", section.getId());
-                final MapView view = Bukkit.getMap(section.getId());
+                if (getMap == null) {
+                    getMap = Reflection.getMethod(Bukkit.class, "getMap",
+                            Reflection.VERSION_NUMBER < 1132 ? short.class : int.class);
+                }
+
+                MapView view = Reflection.invokeMethod(getMap, null, section.getId());
                 if (view == null) {
                     Logger.warn("Map with ID {} is no longer available for rendering. Skipping...", section.getId());
                     save.set(true);
                     return true;
                 }
 
-                final BufferedImage imageSection = finalImage.getSubimage(section.getX() * PIXELS_PER_FRAME,
+                BufferedImage imageSection = finalImage.getSubimage(section.getX() * PIXELS_PER_FRAME,
                         section.getY() * PIXELS_PER_FRAME, PIXELS_PER_FRAME, PIXELS_PER_FRAME);
 
                 view.getRenderers().forEach(view::removeRenderer);
@@ -317,7 +332,7 @@ public final class Images extends JavaPlugin {
                     private boolean rendered;
 
                     @Override
-                    public void render(final MapView map, final MapCanvas canvas, final Player player) {
+                    public void render(MapView map, MapCanvas canvas, Player player) {
 
                         if (!this.rendered) {
                             canvas.drawImage(0, 0, imageSection);
@@ -337,7 +352,7 @@ public final class Images extends JavaPlugin {
         }
     }
 
-    private static BufferedImage resize(BufferedImage image, final int xSections, final int ySections) {
+    private static BufferedImage resize(BufferedImage image, int xSections, int ySections) {
 
         Logger.debug("Resizing a file...");
         if (image.getWidth() % PIXELS_PER_FRAME != 0 || image.getHeight() % PIXELS_PER_FRAME != 0) {
@@ -345,12 +360,12 @@ public final class Images extends JavaPlugin {
             // Get a scaled version of the image
             Logger.debug("The file was an incorrect size and need to be resized!");
             Logger.debug("Getting scaled image...");
-            final java.awt.Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
+            java.awt.Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
             image = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
             Logger.debug("Copying scaled image to a new BufferedImage...");
 
             // Copy the image over to the new instance
-            final Graphics2D g2D = image.createGraphics();
+            Graphics2D g2D = image.createGraphics();
             g2D.drawImage(img, 0, 0, null);
             g2D.dispose();
         }
@@ -359,7 +374,7 @@ public final class Images extends JavaPlugin {
         return image;
     }
 
-    private static void addRelative(final Location loc, final BlockFace face, final int x, final int y) {
+    private static void addRelative(Location loc, BlockFace face, int x, int y) {
 
         switch (face) {
 

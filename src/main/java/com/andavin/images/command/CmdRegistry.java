@@ -25,7 +25,7 @@ public final class CmdRegistry {
      *
      * @param command The command to register.
      */
-    public static void register(final BaseCommand command) {
+    public static void register(BaseCommand command) {
         Logger.debug("Registering command {}.", command);
         COMMAND_MAP.register("images", new CmdExecutor(command));
     }

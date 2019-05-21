@@ -1,6 +1,6 @@
 package com.andavin.images.util;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
@@ -24,17 +24,17 @@ public final class StringUtil {
      * @param str The string to split for lore.
      * @return The different lines for the lore.
      */
-    public static List<String> splitForLore(final String str) {
+    public static List<String> splitForLore(String str) {
 
-        final String[] strings = str.split("%n");
-        final List<String> lines = new LinkedList<>();
+        String[] strings = str.split("%n");
+        List<String> lines = new LinkedList<>();
         for (String string : strings) {
 
             int length = 0;
             boolean isBold = false, previousCode = false;
             for (int i = 0; i < string.length(); i++) {
 
-                final char c = string.charAt(i);
+                char c = string.charAt(i);
                 if (c == ChatColor.COLOR_CHAR) {
                     previousCode = true;
                 } else if (previousCode) {
@@ -53,7 +53,7 @@ public final class StringUtil {
                     length = 0;
                     i = 0;
                 } else {
-                    final FontCharacter craftChar = FontCharacter.getByCharacter(c);
+                    FontCharacter craftChar = FontCharacter.getByCharacter(c);
                     length += craftChar != null ? isBold ? craftChar.getBold() : craftChar.getLength() : 5;
                 }
             }
@@ -77,17 +77,17 @@ public final class StringUtil {
      * @param color The color to place before each line.
      * @return The text for the book with line breaks.
      */
-    public static String splitForBook(final String str, final boolean center, final ChatColor color) {
+    public static String splitForBook(String str, boolean center, ChatColor color) {
 
-        final String[] strings = StringUtils.split(str, '\n');
-        final List<String> lines = new LinkedList<>();
+        String[] strings = StringUtils.split(str, '\n');
+        List<String> lines = new LinkedList<>();
         for (String string : strings) {
 
             int length = 0, lastSpace = -1;
             boolean isBold = false, previousCode = false;
             for (int i = 0; i < string.length(); i++) {
 
-                final char c = string.charAt(i);
+                char c = string.charAt(i);
                 if (c == ' ') {
                     lastSpace = i;
                 }
@@ -98,8 +98,8 @@ public final class StringUtil {
                     previousCode = false;
                     isBold = c == 'l' || c == 'L';
                 } else {
-                    final FontCharacter craftChar = FontCharacter.getByCharacter(c);
-                    final int addition = craftChar != null ? isBold ? craftChar.getBold() : craftChar.getLength() : 5;
+                    FontCharacter craftChar = FontCharacter.getByCharacter(c);
+                    int addition = craftChar != null ? isBold ? craftChar.getBold() : craftChar.getLength() : 5;
                     length += addition;
                 }
 
@@ -141,15 +141,15 @@ public final class StringUtil {
      * @param msg The message to center.
      * @return The centered message.
      */
-    public static String centerMessage(final String msg) {
+    public static String centerMessage(String msg) {
 
         if (msg == null || msg.isEmpty()) {
             return msg;
         }
 
-        final int length = StringUtil.getLength(msg);
-        final StringBuilder spaces = new StringBuilder();
-        final int neededSpaced = CENTER_CHAT - length / 2;
+        int length = StringUtil.getLength(msg);
+        StringBuilder spaces = new StringBuilder();
+        int neededSpaced = CENTER_CHAT - length / 2;
         for (int spaced = 0; spaced < neededSpaced; spaced += FontCharacter.SPACE.getLength()) {
             spaces.append(' ');
         }
@@ -164,7 +164,7 @@ public final class StringUtil {
      * @param title The title to center.
      * @return The centered title.
      */
-    public static String centerTitle(final String title) {
+    public static String centerTitle(String title) {
 
         if (title == null || title.isEmpty()) {
             return title;
@@ -174,9 +174,9 @@ public final class StringUtil {
             return title.substring(32);
         }
 
-        final int length = StringUtil.getLength(title);
-        final StringBuilder spaces = new StringBuilder();
-        final int neededSpaced = INVENTORY_LENGTH - length / 2;
+        int length = StringUtil.getLength(title);
+        StringBuilder spaces = new StringBuilder();
+        int neededSpaced = INVENTORY_LENGTH - length / 2;
         for (int spaced = 0; spaced < neededSpaced; spaced += FontCharacter.SPACE.getLength()) {
             spaces.append(' ');
         }
@@ -190,19 +190,19 @@ public final class StringUtil {
      * @param line The line of text to center
      * @return The line, but centered for a book.
      */
-    public static String centerBookLine(final String line) {
+    public static String centerBookLine(String line) {
 
         if (line == null || line.isEmpty()) {
             return line;
         }
 
-        final int length = StringUtil.getLength(line);
+        int length = StringUtil.getLength(line);
         if (length == 0) {
             return line;
         }
 
-        final StringBuilder spaces = new StringBuilder();
-        final int neededSpaced = BOOK_LENGTH / 2 - length / 2;
+        StringBuilder spaces = new StringBuilder();
+        int neededSpaced = BOOK_LENGTH / 2 - length / 2;
         for (int spaced = 0; spaced < neededSpaced; spaced += FontCharacter.SPACE.getLength()) {
             spaces.append(' ');
         }
@@ -218,15 +218,15 @@ public final class StringUtil {
      * @param base The base length to center off of.
      * @return The centered form of the string.
      */
-    public static String centerWithBase(final String str, final int base) {
+    public static String centerWithBase(String str, int base) {
 
         if (str == null || str.isEmpty()) {
             return str;
         }
 
-        final int length = StringUtil.getLength(str);
-        final StringBuilder spaces = new StringBuilder();
-        final int neededSpaced = (base - length) / 2;
+        int length = StringUtil.getLength(str);
+        StringBuilder spaces = new StringBuilder();
+        int neededSpaced = (base - length) / 2;
         for (int spaced = 0; spaced < neededSpaced; spaced += FontCharacter.SPACE.getLength()) {
             spaces.append(' ');
         }
@@ -241,19 +241,19 @@ public final class StringUtil {
      * @param lines The lines to center.
      * @return The centered text.
      */
-    public static List<String> centerLines(final List<String> lines) {
+    public static List<String> centerLines(List<String> lines) {
 
         if (lines == null || lines.isEmpty()) {
             return lines;
         }
 
-        final int fullSize = StringUtil.getLongestLine(lines);
-        final List<String> newLines = new ArrayList<>(lines.size());
+        int fullSize = StringUtil.getLongestLine(lines);
+        List<String> newLines = new ArrayList<>(lines.size());
         lines.forEach(line -> {
 
-            final int length = StringUtil.getLength(line);
-            final StringBuilder spaces = new StringBuilder();
-            final int neededSpaces = (fullSize - length) / 2;
+            int length = StringUtil.getLength(line);
+            StringBuilder spaces = new StringBuilder();
+            int neededSpaces = (fullSize - length) / 2;
             for (int spaced = 0; spaced < neededSpaces; spaced += FontCharacter.SPACE.getLength()) {
                 spaces.append(' ');
             }
@@ -271,16 +271,16 @@ public final class StringUtil {
      * @param lines The lines of text to get the longest of.
      * @return The length of the longest line.
      */
-    private static int getLongestLine(final List<String> lines) {
+    private static int getLongestLine(List<String> lines) {
 
         if (lines == null || lines.isEmpty()) {
             return 0;
         }
 
         int longest = 0;
-        for (final String line : lines) {
+        for (String line : lines) {
 
-            final int length = StringUtil.getLength(line);
+            int length = StringUtil.getLength(line);
             if (longest < length) {
                 longest = length;
             }
@@ -297,11 +297,11 @@ public final class StringUtil {
      * @param str The string to get the length of.
      * @return The length of the string.
      */
-    static int getLength(final String str) {
+    static int getLength(String str) {
 
         int length = 0;
         boolean isBold = false, previousCode = false;
-        for (final char c : str.toCharArray()) {
+        for (char c : str.toCharArray()) {
 
             if (c == ChatColor.COLOR_CHAR) {
                 previousCode = true;
@@ -309,7 +309,7 @@ public final class StringUtil {
                 previousCode = false;
                 isBold = c == 'l' || c == 'L';
             } else {
-                final FontCharacter fontChar = FontCharacter.getByCharacter(c);
+                FontCharacter fontChar = FontCharacter.getByCharacter(c);
                 length += fontChar != null ? isBold ? fontChar.getBold() : fontChar.getLength() : 5;
             }
         }

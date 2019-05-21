@@ -25,13 +25,13 @@ public final class Image implements ConfigurationSerializable {
     private final Location location;
     private final Map<Location, ImageSection> sections;
 
-    public Image(final Location location, final File imageFile) {
+    public Image(Location location, File imageFile) {
         this.location = location;
         this.imageFile = imageFile;
         this.sections = new HashMap<>();
     }
 
-    public Image(final Map<String, Object> map) {
+    public Image(Map<String, Object> map) {
         this.location = (Location) map.get("location");
         this.sections = new HashMap((Map<Location, ImageSection>) map.get("sections"));
         this.imageFile = new File(Images.getInstance().getDataFolder(), (String) map.get("file"));
@@ -65,7 +65,7 @@ public final class Image implements ConfigurationSerializable {
      * @param y The relative Y coordinate.
      * @param loc The full location of the section.
      */
-    public void addSection(final short id, final int x, final int y, final Location loc) {
+    public void addSection(short id, int x, int y, Location loc) {
         this.sections.put(loc, new ImageSection(id, x, y));
     }
 
@@ -89,7 +89,7 @@ public final class Image implements ConfigurationSerializable {
 
                     if (entity instanceof ItemFrame) {
 
-                        final Location loc1 = entity.getLocation();
+                        Location loc1 = entity.getLocation();
                         if (loc1.getBlockX() == loc.getBlockX() && loc1.getBlockY() == loc.getBlockY() && loc1.getBlockZ() == loc.getBlockZ()) {
                             entity.remove();
                         }
@@ -105,7 +105,7 @@ public final class Image implements ConfigurationSerializable {
      * @return The {@link ImageSection} or null if none was found.
      */
     @Nullable
-    public ImageSection getSection(final Location loc) {
+    public ImageSection getSection(Location loc) {
 
         ImageSection section = this.sections.get(loc);
         if (section == null) {
@@ -122,7 +122,7 @@ public final class Image implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        final Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(3);
         map.put("location", this.location);
         map.put("sections", this.sections);
         map.put("file", this.imageFile.getName());
@@ -130,7 +130,7 @@ public final class Image implements ConfigurationSerializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
 
         if (this == o) {
             return true;
@@ -140,7 +140,7 @@ public final class Image implements ConfigurationSerializable {
             return false;
         }
 
-        final Image image = (Image) o;
+        Image image = (Image) o;
         return Objects.equals(this.imageFile, image.imageFile) &&
                Objects.equals(this.location, image.location) &&
                Objects.equals(this.sections, image.sections);

@@ -17,7 +17,7 @@ public final class Logger {
      *
      * @param obj The object to log.
      */
-    public static synchronized void info(final Object obj) {
+    public static synchronized void info(Object obj) {
         Logger.LOGGER.log(Level.INFO, obj.toString());
     }
 
@@ -26,7 +26,7 @@ public final class Logger {
      *
      * @param msg The message to log.
      */
-    public static synchronized void info(final String msg) {
+    public static synchronized void info(String msg) {
         Logger.LOGGER.log(Level.INFO, msg);
     }
 
@@ -37,7 +37,7 @@ public final class Logger {
      * @param msg The message to log.
      * @param args The arguments to replace placeholders with.
      */
-    public static synchronized void info(final String msg, final Object... args) {
+    public static synchronized void info(String msg, Object... args) {
         Logger.LOGGER.log(Level.INFO, Logger.format(msg, args));
     }
 
@@ -49,7 +49,7 @@ public final class Logger {
      * @param msg The message to log with it.
      * @param args The arguments to place into the message.
      */
-    public static synchronized void info(final Throwable throwable, final String msg, final Object... args) {
+    public static synchronized void info(Throwable throwable, String msg, Object... args) {
         Logger.LOGGER.log(Level.INFO, Logger.format(msg, args), throwable);
     }
 
@@ -58,7 +58,7 @@ public final class Logger {
      *
      * @param throwable The throwable to log.
      */
-    public static synchronized void info(final Throwable throwable) {
+    public static synchronized void info(Throwable throwable) {
         Logger.LOGGER.log(Level.INFO, throwable.getMessage(), throwable);
     }
 
@@ -67,7 +67,7 @@ public final class Logger {
      *
      * @param obj The object to log.
      */
-    public static synchronized void warn(final Object obj) {
+    public static synchronized void warn(Object obj) {
         Logger.LOGGER.log(Level.WARNING, obj.toString());
     }
 
@@ -78,7 +78,7 @@ public final class Logger {
      * @param msg The message to log.
      * @param args The arguments to replace placeholders with.
      */
-    public static synchronized void warn(final String msg, final Object... args) {
+    public static synchronized void warn(String msg, Object... args) {
         Logger.LOGGER.log(Level.WARNING, Logger.format(msg, args));
     }
 
@@ -90,7 +90,7 @@ public final class Logger {
      * @param msg The message to log with it.
      * @param args The arguments to place into the message.
      */
-    public static synchronized void warn(final Throwable throwable, final String msg, final Object... args) {
+    public static synchronized void warn(Throwable throwable, String msg, Object... args) {
         Logger.LOGGER.log(Level.WARNING, Logger.format(msg, args), throwable);
     }
 
@@ -99,7 +99,7 @@ public final class Logger {
      *
      * @param throwable The throwable to log.
      */
-    public static synchronized void warn(final Throwable throwable) {
+    public static synchronized void warn(Throwable throwable) {
         Logger.LOGGER.log(Level.WARNING, throwable.getMessage(), throwable);
     }
 
@@ -108,7 +108,7 @@ public final class Logger {
      *
      * @param obj The object to log.
      */
-    public static synchronized void severe(final Object obj) {
+    public static synchronized void severe(Object obj) {
         Logger.LOGGER.log(Level.SEVERE, obj.toString());
     }
 
@@ -119,7 +119,7 @@ public final class Logger {
      * @param msg The message to log.
      * @param args The arguments to replace placeholders with.
      */
-    public static synchronized void severe(final String msg, final Object... args) {
+    public static synchronized void severe(String msg, Object... args) {
         Logger.LOGGER.log(Level.SEVERE, Logger.format(msg, args));
     }
 
@@ -131,7 +131,7 @@ public final class Logger {
      * @param msg The message to log with it.
      * @param args The arguments to place into the message.
      */
-    public static synchronized void severe(final Throwable throwable, final String msg, final Object... args) {
+    public static synchronized void severe(Throwable throwable, String msg, Object... args) {
         Logger.LOGGER.log(Level.SEVERE, Logger.format(msg, args), throwable);
     }
 
@@ -140,7 +140,7 @@ public final class Logger {
      *
      * @param throwable The throwable to log.
      */
-    public static synchronized void severe(final Throwable throwable) {
+    public static synchronized void severe(Throwable throwable) {
         Logger.LOGGER.log(Level.SEVERE, throwable.getMessage(), throwable);
     }
 
@@ -149,7 +149,7 @@ public final class Logger {
      *
      * @param obj The object to log.
      */
-    public static synchronized void debug(final Object obj) {
+    public static synchronized void debug(Object obj) {
         Logger.LOGGER.log(Level.CONFIG, obj.toString());
     }
 
@@ -160,7 +160,7 @@ public final class Logger {
      * @param msg The message to log.
      * @param args The arguments to replace placeholders with.
      */
-    public static synchronized void debug(final String msg, final Object... args) {
+    public static synchronized void debug(String msg, Object... args) {
         Logger.LOGGER.log(Level.CONFIG, Logger.format(msg, args));
     }
 
@@ -172,7 +172,7 @@ public final class Logger {
      * @param msg The message to log with it.
      * @param args The arguments to place into the message.
      */
-    public static synchronized void debug(final Throwable throwable, final String msg, final Object... args) {
+    public static synchronized void debug(Throwable throwable, String msg, Object... args) {
         Logger.LOGGER.log(Level.CONFIG, Logger.format(msg, args), throwable);
     }
 
@@ -181,7 +181,7 @@ public final class Logger {
      *
      * @param throwable The throwable to log.
      */
-    public static synchronized void debug(final Throwable throwable) {
+    public static synchronized void debug(Throwable throwable) {
         Logger.LOGGER.log(Level.CONFIG, throwable.getMessage(), throwable);
     }
 
@@ -193,17 +193,17 @@ public final class Logger {
      * @param arguments The arguments to place into the message.
      * @return The message that has been formatted.
      */
-    private static String format(final String message, final Object... arguments) {
+    private static String format(String message, Object... arguments) {
 
         if (arguments == null || arguments.length == 0) {
             return message;
         }
 
         int start = 0, argumentIndex = 0, openBraces = 0;
-        final StringBuilder builder = new StringBuilder(message.length() + arguments.length * 16);
+        StringBuilder builder = new StringBuilder(message.length() + arguments.length * 16);
         for (int index = 0; index < message.length(); ++index) {
 
-            final char character = message.charAt(index);
+            char character = message.charAt(index);
             if (character == '{') {
 
                 if (openBraces++ == 0 && start < index) {
@@ -216,7 +216,7 @@ public final class Logger {
 
                     if (argumentIndex < arguments.length) {
 
-                        final Object argument = arguments[argumentIndex++];
+                        Object argument = arguments[argumentIndex++];
                         if (index == start + 1) {
                             builder.append(argument);
                         } else {

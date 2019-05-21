@@ -22,11 +22,11 @@ final class OptionsCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(final Player player, final String label, final String[] args) {
+    public void execute(Player player, String label, String[] args) {
 
         player.sendMessage("§a§lImage Options");
         Images.getImageFiles().forEach(file -> {
-            final String name = file.getName();
+            String name = file.getName();
             player.spigot().sendMessage(new ComponentBuilder(" - ").color(ChatColor.GRAY).append(name).color(ChatColor.YELLOW)
                     .event(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/image create " + name))
                     .event(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder("Click to create ")
@@ -35,7 +35,7 @@ final class OptionsCommand extends BaseCommand {
     }
 
     @Override
-    public boolean hasPermission(final Player player, final String[] args) {
+    public boolean hasPermission(Player player, String[] args) {
         return player.hasPermission("image.manage.options");
     }
 }

@@ -1,40 +1,36 @@
 package com.andavin.images.command;
 
 import com.andavin.images.util.StringUtil;
-import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("Duplicates")
 final class CmdExecutor extends org.bukkit.command.Command {
 
     private final BaseCommand command;
 
-    CmdExecutor(final BaseCommand command) {
+    CmdExecutor(BaseCommand command) {
         super(command.getName(), command.getDescription(),
                 command.getUsage(), Arrays.asList(command.getAliases()));
         this.command = command;
     }
 
     @Override
-    public boolean execute(final CommandSender sender, final String label, String[] args) {
+    public boolean execute(CommandSender sender, String label, String[] args) {
 
-        final BaseCommand cmd = this.getExecutable(this.command, args);
+        BaseCommand cmd = this.getExecutable(this.command, args);
         if (cmd != this.command) {
             args = this.trimArgs(cmd, args);
         }
 
         if (sender instanceof Player) {
 
-            final Player player = (Player) sender;
+            Player player = (Player) sender;
             if (!cmd.hasPermission(player, args)) {
                 player.sendMessage("§cInsufficient permission.");
                 return true;
@@ -67,17 +63,17 @@ final class CmdExecutor extends org.bukkit.command.Command {
     }
 
     @Override
-    public List<String> tabComplete(final CommandSender sender, final String alias, String[] args) throws IllegalArgumentException {
+    public List<String> tabComplete(CommandSender sender, String alias, String[] args) throws IllegalArgumentException {
 
         if (args.length == 0) {
             return Collections.emptyList();
         }
 
-        final String last = args[args.length - 1].toLowerCase();
-        final BaseCommand cmd = this.getExecutable(this.command, args);
+        String last = args[args.length - 1].toLowerCase();
+        BaseCommand cmd = this.getExecutable(this.command, args);
 
-        final Map<String, BaseCommand> children = cmd.getChildren();
-        final List<String> completions = new LinkedList<>();
+        Map<String, BaseCommand> children = cmd.getChildren();
+        List<String> completions = new LinkedList<>();
         children.forEach((name, command) -> {
 
             if (name.startsWith(last) && !completions.contains(command.getName())) {
@@ -105,11 +101,11 @@ final class CmdExecutor extends org.bukkit.command.Command {
      * @return An executable child command of the given command or the command if there is no children.
      */
     @Nonnull
-    private BaseCommand getExecutable(BaseCommand cmd, final String[] args) {
+    private BaseCommand getExecutable(BaseCommand cmd, String[] args) {
 
-        for (final String arg : args) {
+        for (String arg : args) {
 
-            final BaseCommand child = this.getChild(cmd, arg);
+            BaseCommand child = this.getChild(cmd, arg);
             if (child == null) {
                 break;
             }
@@ -129,7 +125,7 @@ final class CmdExecutor extends org.bukkit.command.Command {
      * @return A child command of the given command that matches the argument or null if none exists.
      */
     @Nullable
-    private BaseCommand getChild(final BaseCommand cmd, final String arg) {
+    private BaseCommand getChild(BaseCommand cmd, String arg) {
         return cmd.getChildren().get(arg.toLowerCase());
     }
 
@@ -144,18 +140,18 @@ final class CmdExecutor extends org.bukkit.command.Command {
      * @return A trimmed argument array.
      */
     @Nonnull
-    private String[] trimArgs(final BaseCommand child, final String[] args) {
+    private String[] trimArgs(BaseCommand child, String[] args) {
 
         for (int i = 0; i < args.length; ++i) {
 
             if (args[i].equalsIgnoreCase(child.getName())) {
-                return ArrayUtils.subarray(args, i + 1, args.length);
+                return (String[]) ArrayUtils.subarray(args, i + 1, args.length);
             }
 
-            for (final String alias : child.getAliases()) {
+            for (String alias : child.getAliases()) {
 
                 if (args[i].equalsIgnoreCase(alias)) {
-                    return ArrayUtils.subarray(args, i + 1, args.length);
+                    return (String[]) ArrayUtils.subarray(args, i + 1, args.length);
                 }
             }
         }

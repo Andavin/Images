@@ -28,7 +28,7 @@ final class DeleteCommand extends BaseCommand {
         this.setDesc("Delete an existing image by clicking on it.");
 
         if (Reflection.VERSION_NUMBER < 1120) {
-            final Object comp = Reflection.getInstance(Reflection.getMcClass("ChatComponentText"), "§cClick on an image to delete");
+            Object comp = Reflection.getInstance(Reflection.getMcClass("ChatComponentText"), "§cClick on an image to delete");
             this.packet = Reflection.getInstance(ImageCommand.PACKET, comp, (byte) 2);
         } else {
             this.packet = null;
@@ -36,18 +36,18 @@ final class DeleteCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(final Player player, final String label, final String[] args) {
+    public void execute(Player player, String label, String[] args) {
 
         player.setMetadata(ImageCommand.DELETE_META, new FixedMetadataValue(Images.getInstance(), 0));
         player.sendMessage("§eLeft click any block to cancel.");
 
         Object connection = null;
         if (Reflection.VERSION_NUMBER < 1120) {
-            final Object entityPlayer = Reflection.invokeMethod(ImageCommand.GET_HANDLE, player);
+            Object entityPlayer = Reflection.invokeMethod(ImageCommand.GET_HANDLE, player);
             connection = Reflection.getValue(ImageCommand.CONNECTION, entityPlayer);
         }
 
-        final Object finalConn = connection;
+        Object finalConn = connection;
         new BukkitRunnable() {
 
             @Override
@@ -68,7 +68,7 @@ final class DeleteCommand extends BaseCommand {
     }
 
     @Override
-    public boolean hasPermission(final Player player, final String[] args) {
+    public boolean hasPermission(Player player, String[] args) {
         return player.hasPermission("image.manage.delete");
     }
 }

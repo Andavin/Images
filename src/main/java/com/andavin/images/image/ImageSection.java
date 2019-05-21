@@ -17,13 +17,13 @@ public final class ImageSection implements ConfigurationSerializable {
     private final short id;
     private final int x, y;
 
-    ImageSection(final short id, final int x, final int y) {
+    ImageSection(short id, int x, int y) {
         this.x = x;
         this.y = y;
         this.id = id;
     }
 
-    public ImageSection(final Map<String, Object> map) {
+    public ImageSection(Map<String, Object> map) {
         this.id = NumberConversions.toShort(map.get("id"));
         this.x = NumberConversions.toInt(map.get("x"));
         this.y = NumberConversions.toInt(map.get("y"));
@@ -61,7 +61,7 @@ public final class ImageSection implements ConfigurationSerializable {
 
     @Override
     public Map<String, Object> serialize() {
-        final Map<String, Object> map = new HashMap<>(3);
+        Map<String, Object> map = new HashMap<>(3);
         map.put("id", this.id);
         map.put("x", this.x);
         map.put("y", this.y);
@@ -69,7 +69,7 @@ public final class ImageSection implements ConfigurationSerializable {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
 
         if (this == o) {
             return true;
@@ -79,7 +79,7 @@ public final class ImageSection implements ConfigurationSerializable {
             return false;
         }
 
-        final ImageSection section = (ImageSection) o;
+        ImageSection section = (ImageSection) o;
         return this.id == section.id && this.x == section.x && this.y == section.y;
     }
 

@@ -13,7 +13,7 @@ import java.util.Map;
 @SuppressWarnings({ "SameParameterValue", "WeakerAccess" })
 public abstract class BaseCommand {
 
-    private int min = 0;
+    private int min;
     private final String name;
     private String desc = "", usage;
     private String[] aliases = new String[0];
@@ -24,7 +24,7 @@ public abstract class BaseCommand {
      *
      * @param name The name of the command to create.
      */
-    protected BaseCommand(final String name) {
+    protected BaseCommand(String name) {
         this.name = name;
         this.usage = '/' + name;
     }
@@ -38,7 +38,7 @@ public abstract class BaseCommand {
      * @param label The exact string the player typed in whether it was an alias for the command name.
      * @param args The arguments given by the player.
      */
-    public abstract void execute(final Player player, final String label, final String[] args);
+    public abstract void execute(Player player, String label, String[] args);
 
     /**
      * Execute this command for any other kind of sender if this command is
@@ -48,7 +48,7 @@ public abstract class BaseCommand {
      * @param label The exact string the sender typed in whether it was an alias for the command name.
      * @param args The arguments given by the sender.
      */
-    public void execute(final CommandSender sender, final String label, final String[] args) {
+    public void execute(CommandSender sender, String label, String[] args) {
         sender.sendMessage("Sorry, /" + this.name + " is player only.");
     }
 
@@ -62,7 +62,7 @@ public abstract class BaseCommand {
      * @param args The arguments given in the command.
      * @return Whether the player has permission to use this command.
      */
-    public abstract boolean hasPermission(final Player player, final String[] args);
+    public abstract boolean hasPermission(Player player, String[] args);
 
     /**
      * Tab complete for the specific block command. Using the last
@@ -72,15 +72,15 @@ public abstract class BaseCommand {
      * @param args The arguments currently
      * @param completions All of the current completions to be added to.
      */
-    public void tabComplete(final CommandSender sender, final String[] args, final List<String> completions) {
+    public void tabComplete(CommandSender sender, String[] args, List<String> completions) {
 
-        final String first = args[0].toLowerCase();
+        String first = args[0].toLowerCase();
         if (first.isEmpty()) {
             completions.add(sender.getName());
             return;
         }
 
-        final Player player = Bukkit.getPlayer(first);
+        Player player = Bukkit.getPlayer(first);
         if (player == null) {
 
             Bukkit.getOnlinePlayers().forEach(pl -> {
@@ -89,7 +89,7 @@ public abstract class BaseCommand {
                     return;
                 }
 
-                final String name = pl.getName();
+                String name = pl.getName();
                 if (name.toLowerCase().startsWith(first)) {
                     completions.add(name);
                 }
@@ -113,11 +113,11 @@ public abstract class BaseCommand {
      *
      * @param child The child command to add.
      */
-    protected void addChild(final BaseCommand child) {
+    protected void addChild(BaseCommand child) {
 
         Preconditions.checkNotNull(child);
         this.children.put(child.getName().toLowerCase(), child);
-        for (final String alias : child.getAliases()) {
+        for (String alias : child.getAliases()) {
             this.children.put(alias.toLowerCase(), child);
         }
     }
@@ -127,7 +127,7 @@ public abstract class BaseCommand {
      *
      * @param min The minimum arguments to set to.
      */
-    protected void setMinimumArgs(final int min) {
+    protected void setMinimumArgs(int min) {
         this.min = min;
     }
 
@@ -136,7 +136,7 @@ public abstract class BaseCommand {
      *
      * @param aliases The aliases to set to.
      */
-    protected void setAliases(final String... aliases) {
+    protected void setAliases(String... aliases) {
         this.aliases = aliases;
     }
 
@@ -145,7 +145,7 @@ public abstract class BaseCommand {
      *
      * @param desc The description to set to.
      */
-    protected void setDesc(final String desc) {
+    protected void setDesc(String desc) {
         this.desc = desc;
     }
 
@@ -154,7 +154,7 @@ public abstract class BaseCommand {
      *
      * @param usage The usage to set to.
      */
-    protected void setUsage(final String usage) {
+    protected void setUsage(String usage) {
         this.usage = usage.replace("<command>", this.name);
     }
 
@@ -208,7 +208,7 @@ public abstract class BaseCommand {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(Object o) {
 
         if (o == this) {
             return true;
@@ -218,18 +218,18 @@ public abstract class BaseCommand {
             return false;
         }
 
-        final BaseCommand cmd = ((BaseCommand) o);
+        BaseCommand cmd = ((BaseCommand) o);
         if (cmd.getName().equalsIgnoreCase(this.name)) {
             return true;
         }
 
-        for (final String alias : cmd.getAliases()) {
+        for (String alias : cmd.getAliases()) {
 
             if (alias.equalsIgnoreCase(this.name)) {
                 return true;
             }
 
-            for (final String alias1 : this.getAliases()) {
+            for (String alias1 : this.getAliases()) {
 
                 // Check all aliases against each other and the command name
                 if (alias.equalsIgnoreCase(alias1)) {

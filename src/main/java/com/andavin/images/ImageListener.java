@@ -31,16 +31,16 @@ import java.io.IOException;
 public final class ImageListener implements Listener {
 
     @EventHandler
-    public void onInteract(final PlayerInteractEvent event) {
+    public void onInteract(PlayerInteractEvent event) {
 
-        final Action action = event.getAction();
+        Action action = event.getAction();
         if (action == Action.LEFT_CLICK_AIR || action == Action.RIGHT_CLICK_AIR) {
             return;
         }
 
-        final Player player = event.getPlayer();
-        final boolean create = player.hasMetadata(ImageCommand.CREATE_META);
-        final boolean delete = !create && player.hasMetadata(ImageCommand.DELETE_META);
+        Player player = event.getPlayer();
+        boolean create = player.hasMetadata(ImageCommand.CREATE_META);
+        boolean delete = !create && player.hasMetadata(ImageCommand.DELETE_META);
         if (!create && !delete) {
             return;
         }
@@ -58,7 +58,7 @@ public final class ImageListener implements Listener {
         }
 
         // Can only be a right click at this point
-        final File imageFile = (File) player.getMetadata(ImageCommand.CREATE_META).get(0).value();
+        File imageFile = (File) player.getMetadata(ImageCommand.CREATE_META).get(0).value();
         if (!imageFile.exists()) {
             player.sendMessage("§cThe file §l" + imageFile.getName() + "§c does not exist anymore!");
             return;
@@ -67,7 +67,7 @@ public final class ImageListener implements Listener {
         player.removeMetadata(ImageCommand.CREATE_META, Images.getInstance());
         try {
 
-            final Image image = Images.createAndStoreImage(imageFile, event.getClickedBlock().getRelative(event.getBlockFace()), event.getBlockFace());
+            Image image = Images.createAndStoreImage(imageFile, event.getClickedBlock().getRelative(event.getBlockFace()), event.getBlockFace());
             if (image == null) {
                 player.sendMessage("§cFailed to create the image §l" + imageFile.getName() + "§c at that location.");
                 return;
@@ -94,16 +94,16 @@ public final class ImageListener implements Listener {
     }
 
     @EventHandler
-    public void onInteract(final PlayerInteractEntityEvent event) {
+    public void onInteract(PlayerInteractEntityEvent event) {
 
-        final Entity entity = event.getRightClicked();
+        Entity entity = event.getRightClicked();
         if (entity instanceof ItemFrame) {
 
-            final Image image = Images.getImage(entity.getLocation());
+            Image image = Images.getImage(entity.getLocation());
             if (image != null) {
 
                 event.setCancelled(true);
-                final Player player = event.getPlayer();
+                Player player = event.getPlayer();
                 if (player.hasMetadata(ImageCommand.DELETE_META)) {
                     player.sendMessage("§aDeleting image §l" + image.getImageFile().getName() + "§a.");
                     player.removeMetadata(ImageCommand.DELETE_META, Images.getInstance());
@@ -114,32 +114,32 @@ public final class ImageListener implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onAttack(final EntityDamageByEntityEvent event) {
+    public void onAttack(EntityDamageByEntityEvent event) {
 
-        final Entity entity = event.getEntity();
+        Entity entity = event.getEntity();
         if (entity instanceof ItemFrame && Images.getImage(entity.getLocation()) != null) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBreak(final HangingBreakEvent event) {
+    public void onBreak(HangingBreakEvent event) {
 
-        final Hanging hanging = event.getEntity();
+        Hanging hanging = event.getEntity();
         if (hanging instanceof ItemFrame && Images.getImage(hanging.getLocation()) != null) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBreak(final HangingBreakByEntityEvent event) {
+    public void onBreak(HangingBreakByEntityEvent event) {
         this.onBreak((HangingBreakEvent) event);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPlace(final BlockPlaceEvent event) {
+    public void onPlace(BlockPlaceEvent event) {
 
-        final Location loc = event.getBlock().getLocation();
+        Location loc = event.getBlock().getLocation();
         if (Images.getImage(loc) != null) {
             event.setCancelled(true);
             event.getPlayer().sendMessage("§cCannot place that there!");

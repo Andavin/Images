@@ -69,5 +69,5 @@ hs_err_pid*
 
 .DS_Store
 .idea/
-Images.iml
+*.iml
 target/

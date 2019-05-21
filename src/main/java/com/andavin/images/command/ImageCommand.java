@@ -33,7 +33,7 @@ public final class ImageCommand extends BaseCommand {
     }
 
     @Override
-    public void execute(final Player player, final String label, final String[] args) {
+    public void execute(Player player, String label, String[] args) {
 
         if (args.length > 0) {
             player.sendMessage("§cUnrecognized command!");
@@ -45,7 +45,7 @@ public final class ImageCommand extends BaseCommand {
     }
 
     @Override
-    public boolean hasPermission(final Player player, final String[] args) {
+    public boolean hasPermission(Player player, String[] args) {
         return player.hasPermission("image.manage");
     }
 }
