@@ -1,9 +1,11 @@
 package com.andavin.images;
 
-import com.andavin.images.data.*;
+import com.andavin.images.data.DataManager;
+import com.andavin.images.data.FileDataManager;
+import com.andavin.images.data.MySQLDataManager;
+import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
-import com.andavin.images.legacy.image.LegacyImage;
-import com.andavin.images.legacy.image.LegacyImageSection;
+import com.andavin.images.legacy.LegacyImportManager;
 import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import org.bukkit.Bukkit;
@@ -12,7 +14,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,7 +23,6 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +45,8 @@ public class Images extends JavaPlugin implements Listener {
      * - create <image> [scale]
      * - resize [scale] // Will interact with the image to resize
      * - delete // Will interact with the image to resize
+     * - import // Will save images and then tell the player how many were
+     *             imported and add them to the loaded images list
      */
 
     private static final int PIXELS_PER_FRAME = 128;
@@ -88,13 +90,9 @@ public class Images extends JavaPlugin implements Listener {
                 throw new IllegalStateException("Unknown database type: " + type);
         }
 
-        File legacyDataFile = new File(imagesDirectory, "data.yml");
-        if (legacyDataFile.exists()) {
-            // Legacy configuration loading
-            LegacyImage.dataFolder = imagesDirectory;
-            ConfigurationSerialization.registerClass(LegacyImage.class);
-            ConfigurationSerialization.registerClass(LegacyImageSection.class);
-            dataManager = new LegacyDataManager(legacyDataFile, dataManager);
+        if (new File(imagesDirectory, "data.yml").exists()) {
+            Logger.info("Found legacy image data (1.0.x-SNAPSHOT).");
+            Logger.info("Use '/images import' to import it to the new format");
         }
 
         if (config.getBoolean("database.initialize")) {
@@ -102,6 +100,7 @@ public class Images extends JavaPlugin implements Listener {
         }
 
         this.images.addAll(dataManager.load());
+        Logger.info("Loaded {} images...", this.images.size());
     }
 
     @Override
@@ -109,29 +108,16 @@ public class Images extends JavaPlugin implements Listener {
         dataManager.saveAll(this.images);
     }
 
-    private void refreshImages(Player player, Location location) {
-
-        synchronized (this.images) {
-
-            Logger.info("Images {}", this.images.size());
-            for (CustomImage image : this.images) {
-                Logger.info("Refreshing this");
-                image.refresh(player, location);
-            }
-        }
-    }
-
     @EventHandler
     // This is called directly after the PlayerConnection
     // is set as the packetListener for the player
     public void onJoin(PlayerJoinEvent event) {
-        Logger.info("Joining");
+
         Player player = event.getPlayer();
-        // TODO add connection packet listener
         Location location = player.getLocation();
         Bukkit.getScheduler().runTaskAsynchronously(this,
                 () -> this.refreshImages(player, location));
-        BRIDGE.addEntityListener(player, (pl, entityId) -> {
+        BRIDGE.addEntityListener(player, (clicker, entityId) -> {
             Logger.info("Clicking on {}", entityId);
         });
     }
@@ -147,8 +133,9 @@ public class Images extends JavaPlugin implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
 
-        Location to = event.getTo();
-        if (!LocationUtil.isSameBlock(event.getFrom(), to)) {
+        Location from = event.getFrom(), to = event.getTo();
+        if (from.getBlockX() >> 4 != to.getBlockX() >> 4 ||
+                from.getBlockZ() >> 4 != to.getBlockZ() >> 4) {
             Player player = event.getPlayer();
             Bukkit.getScheduler().runTaskAsynchronously(this,
                     () -> this.refreshImages(player, to));
@@ -160,6 +147,21 @@ public class Images extends JavaPlugin implements Listener {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
         Player player = (Player) sender;
+        if (args[0].equalsIgnoreCase("import")) {
+
+            try {
+                player.sendMessage("§aImporting legacy images.\n" +
+                        "§eThis will cause sever lag. Please wait...");
+                List<CustomImage> images = LegacyImportManager.importImages(imagesDirectory, dataManager);
+                this.images.addAll(images);
+                player.sendMessage("§aSuccessfully imported §f" + images.size() + "§a images");
+            } catch (IllegalStateException e) {
+                player.sendMessage(e.getMessage());
+            }
+
+            return true;
+        }
+
         Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 
             try {
@@ -228,43 +230,13 @@ public class Images extends JavaPlugin implements Listener {
         return match;
     }
 
-    private static BufferedImage resize(BufferedImage image, int xSections, int ySections) {
+    private void refreshImages(Player player, Location location) {
 
-        Logger.debug("Resizing a file...");
-        if (image.getWidth() % PIXELS_PER_FRAME != 0 || image.getHeight() % PIXELS_PER_FRAME != 0) {
+        synchronized (this.images) {
 
-            // Get a scaled version of the image
-            Logger.debug("The file was an incorrect size and need to be resized!");
-            Logger.debug("Getting scaled image...");
-            java.awt.Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
-            image = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-            Logger.debug("Copying scaled image to a new BufferedImage...");
-
-            // Copy the image over to the new instance
-            Graphics2D g2D = image.createGraphics();
-            g2D.drawImage(img, 0, 0, null);
-            g2D.dispose();
-        }
-
-        Logger.debug("Finished resizing.");
-        return image;
-    }
-
-    private static void addRelative(Location loc, BlockFace face, int x, int y) {
-
-        switch (face) {
-            case NORTH:
-                loc.add(-x, -y, 0);
-                break;
-            case SOUTH:
-                loc.add(x, -y, 0);
-                break;
-            case EAST:
-                loc.add(0, -y, -x);
-                break;
-            case WEST:
-                loc.add(0, -y, x);
-                break;
+            for (CustomImage image : this.images) {
+                image.refresh(player, location);
+            }
         }
     }
 }

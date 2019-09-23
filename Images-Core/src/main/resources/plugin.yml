@@ -5,6 +5,3 @@ authors: [ 'Andavin' ]
 description: ${project.description}
 website: ${project.url}
 softdepend: [ 'Multiverse-Core', 'PlotSquared' ]
-
-commands:
-  test:

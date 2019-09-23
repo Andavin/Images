@@ -2,7 +2,6 @@ package com.andavin.images.image;
 
 import com.andavin.images.MapHelper;
 import com.andavin.util.LocationUtil;
-import com.andavin.util.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -30,9 +29,11 @@ public class CustomImage implements Serializable {
     public static final UUID UNKNOWN_CREATOR = new UUID(
             -7650016060676093479L, -6847602434101430799L);
     private static final int PIXELS_PER_FRAME = 128;
+    private static final long serialVersionUID = 152608317193555652L;
 
+    private transient int id = -1;
     private transient Location location;
-    private int id = -1;
+
     private final UUID creator;
     private final String imageName;
     private final BlockFace direction;
@@ -80,7 +81,6 @@ public class CustomImage implements Serializable {
      */
     public void refresh(Player player, Location location) {
 
-        Logger.info("refreshing");
         for (CustomImageSection section : this.sections) {
 
             boolean sameWorld = section.getLocation().getWorld().equals(location.getWorld());
@@ -88,19 +88,14 @@ public class CustomImage implements Serializable {
 
                 double distance = section.getLocation().distanceSquared(location);
                 if (distance <= 64 * 64) {
-                    Logger.info("Showing");
                     section.show(player);
                 } else if (distance > 128 * 128) {
-                    Logger.info("hiding");
                     section.hide(player);
                 }
             } else {
-                Logger.info("hiding");
                 section.hide(player);
             }
         }
-
-        Logger.info("hmm");
     }
 
     /**
@@ -212,7 +207,7 @@ public class CustomImage implements Serializable {
     }
 
     static void writeLocation(ObjectOutputStream out, Location location) throws IOException {
-        out.writeObject(location.getWorld().getUID());
+        out.writeObject(location.getWorld().getName());
         out.writeInt(location.getBlockX());
         out.writeInt(location.getBlockY());
         out.writeInt(location.getBlockZ());
@@ -222,9 +217,9 @@ public class CustomImage implements Serializable {
 
     static Location readLocation(ObjectInputStream in) throws IOException, ClassNotFoundException {
 
-        UUID id = (UUID) in.readObject();
-        World world = Bukkit.getWorld(id);
-        checkState(world != null, "unknown world with ID %s", id);
+        String name = (String) in.readObject();
+        World world = Bukkit.getWorld(name);
+        checkState(world != null, "unknown world with ID %s", name);
         return new Location(
                 world,
                 in.readInt(), in.readInt(), in.readInt(),

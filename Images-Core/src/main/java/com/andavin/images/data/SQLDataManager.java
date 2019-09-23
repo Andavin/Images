@@ -18,7 +18,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 abstract class SQLDataManager implements DataManager {
 
-    private static final String TABLE_NAME = "custom_images";
+    static final String TABLE_NAME = "`custom_images`";
     private final String url;
     private final Properties properties = new Properties();
 
@@ -33,31 +33,19 @@ abstract class SQLDataManager implements DataManager {
     }
 
     @Override
-    public void initialize() {
-
-        try (Connection connection = this.getConnection();
-             PreparedStatement create = connection.prepareStatement(
-                     "create table if not exists " + TABLE_NAME + "(" +
-                             "`id` int auto_increment primary key," +
-                             "`data` mediumblob not null)")) {
-            create.executeUpdate();
-        } catch (SQLException e) {
-            Logger.severe(e);
-        }
-    }
-
-    @Override
     public List<CustomImage> load() {
 
         List<CustomImage> images = new ArrayList<>();
         try (Connection connection = this.getConnection();
              PreparedStatement select = connection.prepareStatement(
-                     "select `data` from " + TABLE_NAME)) {
+                     "SELECT `id`, `data` FROM " + TABLE_NAME)) {
 
             try (ResultSet result = select.executeQuery()) {
 
                 while (result.next()) {
-                    images.add(toImage(result.getBytes(1)));
+                    CustomImage image = toImage(result.getBytes("data"));
+                    image.setId(result.getInt("id"));
+                    images.add(image);
                 }
             }
         } catch (SQLException e) {
@@ -94,39 +82,48 @@ abstract class SQLDataManager implements DataManager {
         }
     }
 
-    private Connection getConnection() throws SQLException {
+    /**
+     * Create a new {@link Connection} to the SQL database
+     * with the given properties and credentials specified
+     * at creation of this data manager.
+     *
+     * @return The newly created connection.
+     * @throws SQLException If something goes wrong while creating
+     *                      the connection.
+     */
+    Connection getConnection() throws SQLException {
         return DriverManager.getConnection(this.url, this.properties);
     }
 
     private synchronized void save(Connection connection, CustomImage image) throws SQLException {
 
         if (image.getId() == -1) {
-            create(connection, image);
+
+            try (PreparedStatement insert = connection.prepareStatement(
+                    "INSERT INTO " + TABLE_NAME + "(`data`) VALUES (?)",
+                    Statement.RETURN_GENERATED_KEYS)) {
+
+                insert.setObject(1, toByteArray(image));
+                insert.execute();
+                try (ResultSet result = insert.getGeneratedKeys()) {
+
+                    if (result.next()) {
+                        image.setId(result.getInt(1));
+                        Logger.info("Set ID to {}", image.getId());
+                    } else {
+                        Logger.info("nothing returned");
+                    }
+                }
+            }
+
             return;
         }
 
         try (PreparedStatement update = connection.prepareStatement(
-                "update " + TABLE_NAME + " set `data` = ? where `id` = ?")) {
+                "UPDATE " + TABLE_NAME + " SET `data` = ? WHERE `id` = ?")) {
             update.setBytes(1, toByteArray(image));
             update.setInt(2, image.getId());
             update.executeUpdate();
-        }
-    }
-
-    private synchronized void create(Connection connection, CustomImage image) throws SQLException {
-
-        try (PreparedStatement insert = connection.prepareStatement(
-                "insert into " + TABLE_NAME + "(`data`) values (?)",
-                Statement.RETURN_GENERATED_KEYS)) {
-
-            insert.setObject(1, toByteArray(image));
-            insert.execute();
-            try (ResultSet result = insert.getGeneratedKeys()) {
-
-                if (result.next()) {
-                    image.setId(result.getInt(1));
-                }
-            }
         }
     }
 

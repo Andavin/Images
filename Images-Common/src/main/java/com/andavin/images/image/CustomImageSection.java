@@ -92,5 +92,6 @@ public class CustomImageSection implements Serializable {
         this.location = readLocation(in);
         this.frameId = ID_COUNTER.getAndIncrement();
         this.mapId = MapHelper.getNextMapId(location.getWorld());
+        this.shown = new HashSet<>();
     }
 }
