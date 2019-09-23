@@ -25,9 +25,11 @@ import static com.andavin.images.image.CustomImage.writeLocation;
 public class CustomImageSection implements Serializable {
 
     private static final AtomicInteger ID_COUNTER = new AtomicInteger(Integer.MAX_VALUE / 4);
+
     private final int x, y;
     private final byte[] pixels;
     private final BlockFace direction;
+
     transient Set<UUID> shown = new HashSet<>();
     private transient Location location;
     private transient int frameId, mapId; // Should not be

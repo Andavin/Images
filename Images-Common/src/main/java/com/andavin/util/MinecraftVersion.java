@@ -120,19 +120,6 @@ public enum MinecraftVersion {
      * The current {@link MinecraftVersion} of this server.
      */
     public static final MinecraftVersion CURRENT;
-    /**
-     * The package prefix for all Minecraft server (NMS) classes.
-     *
-     * @see #findMcClass(String)
-     */
-    public static final String MINECRAFT_PREFIX = "net.minecraft.server." + CURRENT + '.';
-    /**
-     * The package prefix for all CraftBukkit classes.
-     *
-     * @see #findCraftClass(String)
-     */
-    public static final String CRAFTBUKKIT_PREFIX = "org.bukkit.craftbukkit." + CURRENT + '.';
-    private static final String FULL_VERSION = CURRENT.name() + '_' + MinorVersion.CURRENT;
 
     static {
 
@@ -144,6 +131,22 @@ public enum MinecraftVersion {
             throw new UnsupportedOperationException("Version " + versionString + " is not supported.", e);
         }
     }
+
+    /**
+     * The package prefix for all Minecraft server (NMS) classes.
+     *
+     * @see #findMcClass(String)
+     */
+    public static final String MINECRAFT_PREFIX = "net.minecraft.server." + CURRENT + '.';
+
+    /**
+     * The package prefix for all CraftBukkit classes.
+     *
+     * @see #findCraftClass(String)
+     */
+    public static final String CRAFTBUKKIT_PREFIX = "org.bukkit.craftbukkit." + CURRENT + '.';
+
+    private static final String FULL_VERSION = CURRENT.name() + '_' + MinorVersion.CURRENT;
 
     /**
      * Tell if the {@link #CURRENT current server

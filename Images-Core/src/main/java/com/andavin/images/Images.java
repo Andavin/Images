@@ -50,8 +50,143 @@ public class Images extends JavaPlugin implements Listener {
     private static final int PIXELS_PER_FRAME = 128;
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
     private static File imagesDirectory;
-    private final List<CustomImage> images = new ArrayList<>();
+
     private DataManager dataManager;
+    private final List<CustomImage> images = new ArrayList<>();
+
+    @Override
+    public void onLoad() {
+        Logger.initialize(this.getLogger());
+        imagesDirectory = this.getDataFolder();
+    }
+
+    @Override
+    public void onEnable() {
+
+        this.saveDefaultConfig();
+        Bukkit.getPluginManager().registerEvents(this, this);
+
+        FileConfiguration config = this.getConfig();
+        String type = config.getString("database.type").toUpperCase(Locale.ENGLISH);
+        switch (type) {
+            case "MYSQL":
+                dataManager = new MySQLDataManager(
+                        config.getString("database.host"),
+                        config.getInt("database.port"),
+                        config.getString("database.schema"),
+                        config.getString("database.user"),
+                        config.getString("database.password")
+                );
+                break;
+            case "SQLITE":
+                dataManager = new SQLiteDataManager(new File(imagesDirectory, "images.db"));
+                break;
+            case "FILE":
+                dataManager = new FileDataManager(new File(imagesDirectory, "images.cimg"));
+                break;
+            default:
+                throw new IllegalStateException("Unknown database type: " + type);
+        }
+
+        File legacyDataFile = new File(imagesDirectory, "data.yml");
+        if (legacyDataFile.exists()) {
+            // Legacy configuration loading
+            LegacyImage.dataFolder = imagesDirectory;
+            ConfigurationSerialization.registerClass(LegacyImage.class);
+            ConfigurationSerialization.registerClass(LegacyImageSection.class);
+            dataManager = new LegacyDataManager(legacyDataFile, dataManager);
+        }
+
+        if (config.getBoolean("database.initialize")) {
+            dataManager.initialize();
+        }
+
+        this.images.addAll(dataManager.load());
+    }
+
+    @Override
+    public void onDisable() {
+        dataManager.saveAll(this.images);
+    }
+
+    private void refreshImages(Player player, Location location) {
+
+        synchronized (this.images) {
+
+            Logger.info("Images {}", this.images.size());
+            for (CustomImage image : this.images) {
+                Logger.info("Refreshing this");
+                image.refresh(player, location);
+            }
+        }
+    }
+
+    @EventHandler
+    // This is called directly after the PlayerConnection
+    // is set as the packetListener for the player
+    public void onJoin(PlayerJoinEvent event) {
+        Logger.info("Joining");
+        Player player = event.getPlayer();
+        // TODO add connection packet listener
+        Location location = player.getLocation();
+        Bukkit.getScheduler().runTaskAsynchronously(this,
+                () -> this.refreshImages(player, location));
+        BRIDGE.addEntityListener(player, (pl, entityId) -> {
+            Logger.info("Clicking on {}", entityId);
+        });
+    }
+
+    @EventHandler
+    public void onWorld(PlayerChangedWorldEvent event) {
+        Player player = event.getPlayer();
+        Location location = player.getLocation();
+        Bukkit.getScheduler().runTaskAsynchronously(this,
+                () -> this.refreshImages(player, location));
+    }
+
+    @EventHandler
+    public void onMove(PlayerMoveEvent event) {
+
+        Location to = event.getTo();
+        if (!LocationUtil.isSameBlock(event.getFrom(), to)) {
+            Player player = event.getPlayer();
+            Bukkit.getScheduler().runTaskAsynchronously(this,
+                    () -> this.refreshImages(player, to));
+        }
+    }
+
+    // TODO figure out why it's so slow after the command
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+
+        Player player = (Player) sender;
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+
+            try {
+
+                File file = getImageFile(args[0]);
+                BufferedImage image = ImageIO.read(file);
+                if (image.getWidth() < PIXELS_PER_FRAME || image.getHeight() < PIXELS_PER_FRAME) {
+                    throw new IllegalArgumentException("§cThe image §l" + file.getName() + "§c is too small! Must be at least 128x128 pixels.");
+                }
+
+                Location location = player.getLocation();
+                BlockFace direction = LocationUtil.getCardinalDirection(location).getOppositeFace();
+                CustomImage customImage = new CustomImage(player.getUniqueId(), file.getName(), location, direction, image);
+                customImage.refresh(player, location);
+                synchronized (this.images) {
+                    this.images.add(customImage);
+                }
+
+            } catch (IOException e) {
+                Logger.severe(e);
+            } catch (Exception e) {
+                Logger.handle(e, player::sendMessage, true);
+            }
+        });
+
+        return true;
+    }
 
     /**
      * Get a {@link File} from the image directory that
@@ -130,140 +265,6 @@ public class Images extends JavaPlugin implements Listener {
             case WEST:
                 loc.add(0, -y, x);
                 break;
-        }
-    }
-
-    @EventHandler
-    // This is called directly after the PlayerConnection
-    // is set as the packetListener for the player
-    public void onJoin(PlayerJoinEvent event) {
-        Logger.info("Joining");
-        Player player = event.getPlayer();
-        // TODO add connection packet listener
-        Location location = player.getLocation();
-        Bukkit.getScheduler().runTaskAsynchronously(this,
-                () -> this.refreshImages(player, location));
-        BRIDGE.addEntityListener(player, (pl, entityId) -> {
-            Logger.info("Clicking on {}", entityId);
-        });
-    }
-
-    @EventHandler
-    public void onWorld(PlayerChangedWorldEvent event) {
-        Player player = event.getPlayer();
-        Location location = player.getLocation();
-        Bukkit.getScheduler().runTaskAsynchronously(this,
-                () -> this.refreshImages(player, location));
-    }
-
-    @EventHandler
-    public void onMove(PlayerMoveEvent event) {
-
-        Location to = event.getTo();
-        if (!LocationUtil.isSameBlock(event.getFrom(), to)) {
-            Player player = event.getPlayer();
-            Bukkit.getScheduler().runTaskAsynchronously(this,
-                    () -> this.refreshImages(player, to));
-        }
-    }
-
-    // TODO figure out why it's so slow after the command
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        Player player = (Player) sender;
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-
-            try {
-
-                File file = getImageFile(args[0]);
-                BufferedImage image = ImageIO.read(file);
-                if (image.getWidth() < PIXELS_PER_FRAME || image.getHeight() < PIXELS_PER_FRAME) {
-                    throw new IllegalArgumentException("§cThe image §l" + file.getName() + "§c is too small! Must be at least 128x128 pixels.");
-                }
-
-                Location location = player.getLocation();
-                BlockFace direction = LocationUtil.getCardinalDirection(location).getOppositeFace();
-                CustomImage customImage = new CustomImage(player.getUniqueId(), file.getName(), location, direction, image);
-                customImage.refresh(player, location);
-                synchronized (this.images) {
-                    this.images.add(customImage);
-                }
-
-            } catch (IOException e) {
-                Logger.severe(e);
-            } catch (Exception e) {
-                Logger.handle(e, player::sendMessage, true);
-            }
-        });
-
-        return true;
-    }
-
-    @Override
-    public void onLoad() {
-        Logger.initialize(this.getLogger());
-        imagesDirectory = this.getDataFolder();
-        LegacyImage.dataFolder = imagesDirectory;
-    }
-
-    @Override
-    public void onDisable() {
-        dataManager.saveAll(this.images);
-    }
-
-    @Override
-    public void onEnable() {
-
-        this.saveDefaultConfig();
-        Bukkit.getPluginManager().registerEvents(this, this);
-
-        FileConfiguration config = this.getConfig();
-        String type = config.getString("database.type").toUpperCase(Locale.ENGLISH);
-        switch (type) {
-            case "MYSQL":
-                dataManager = new MySQLDataManager(
-                        config.getString("database.host"),
-                        config.getInt("database.port"),
-                        config.getString("database.schema"),
-                        config.getString("database.user"),
-                        config.getString("database.password")
-                );
-                break;
-            case "SQLITE":
-                dataManager = new SQLiteDataManager(new File(imagesDirectory, "images.db"));
-                break;
-            case "FILE":
-                dataManager = new FileDataManager(new File(imagesDirectory, "images.cimg"));
-                break;
-            default:
-                throw new IllegalStateException("Unknown database type: " + type);
-        }
-
-        File legacyDataFile = new File(imagesDirectory, "data.yml");
-        if (legacyDataFile.exists()) {
-            // Legacy configuration loading
-            ConfigurationSerialization.registerClass(LegacyImage.class);
-            ConfigurationSerialization.registerClass(LegacyImageSection.class);
-            dataManager = new LegacyDataManager(legacyDataFile, dataManager);
-        }
-
-        if (config.getBoolean("database.initialize")) {
-            dataManager.initialize();
-        }
-
-        this.images.addAll(dataManager.load());
-    }
-
-    private void refreshImages(Player player, Location location) {
-
-        synchronized (this.images) {
-
-            Logger.info("Images {}", this.images.size());
-            for (CustomImage image : this.images) {
-                Logger.info("Refreshing this");
-                image.refresh(player, location);
-            }
         }
     }
 }

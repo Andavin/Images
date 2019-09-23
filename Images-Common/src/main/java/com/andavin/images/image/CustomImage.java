@@ -30,12 +30,13 @@ public class CustomImage implements Serializable {
     public static final UUID UNKNOWN_CREATOR = new UUID(
             -7650016060676093479L, -6847602434101430799L);
     private static final int PIXELS_PER_FRAME = 128;
+
+    private transient Location location;
+    private int id = -1;
     private final UUID creator;
     private final String imageName;
     private final BlockFace direction;
     private final List<CustomImageSection> sections = new ArrayList<>();
-    private transient Location location;
-    private int id = -1;
 
     public CustomImage(String imageName, Location location, BlockFace direction, BufferedImage image) {
         this(UNKNOWN_CREATOR, imageName, location, direction, image);
@@ -48,42 +49,6 @@ public class CustomImage implements Serializable {
         this.location = location;
         this.creator = creator;
         this.update(image);
-    }
-
-    static void writeLocation(ObjectOutputStream out, Location location) throws IOException {
-        out.writeObject(location.getWorld().getUID());
-        out.writeInt(location.getBlockX());
-        out.writeInt(location.getBlockY());
-        out.writeInt(location.getBlockZ());
-        out.writeFloat(location.getYaw());
-        out.writeFloat(location.getPitch());
-    }
-
-    static Location readLocation(ObjectInputStream in) throws IOException, ClassNotFoundException {
-
-        UUID id = (UUID) in.readObject();
-        World world = Bukkit.getWorld(id);
-        checkState(world != null, "unknown world with ID %s", id);
-        return new Location(
-                world,
-                in.readInt(), in.readInt(), in.readInt(),
-                in.readFloat(), in.readFloat()
-        );
-    }
-
-    private static BufferedImage resize(BufferedImage image, int xSections, int ySections) {
-
-        if (image.getWidth() % PIXELS_PER_FRAME == 0 && image.getHeight() % PIXELS_PER_FRAME == 0) {
-            return image;
-        }
-        // Get a scaled version of the image
-        Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
-        image = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-        // Copy the image over to the new instance
-        Graphics2D g2D = image.createGraphics();
-        g2D.drawImage(img, 0, 0, null);
-        g2D.dispose();
-        return image;
     }
 
     public int getId() {
@@ -244,5 +209,41 @@ public class CustomImage implements Serializable {
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         this.location = readLocation(in);
+    }
+
+    static void writeLocation(ObjectOutputStream out, Location location) throws IOException {
+        out.writeObject(location.getWorld().getUID());
+        out.writeInt(location.getBlockX());
+        out.writeInt(location.getBlockY());
+        out.writeInt(location.getBlockZ());
+        out.writeFloat(location.getYaw());
+        out.writeFloat(location.getPitch());
+    }
+
+    static Location readLocation(ObjectInputStream in) throws IOException, ClassNotFoundException {
+
+        UUID id = (UUID) in.readObject();
+        World world = Bukkit.getWorld(id);
+        checkState(world != null, "unknown world with ID %s", id);
+        return new Location(
+                world,
+                in.readInt(), in.readInt(), in.readInt(),
+                in.readFloat(), in.readFloat()
+        );
+    }
+
+    private static BufferedImage resize(BufferedImage image, int xSections, int ySections) {
+
+        if (image.getWidth() % PIXELS_PER_FRAME == 0 && image.getHeight() % PIXELS_PER_FRAME == 0) {
+            return image;
+        }
+        // Get a scaled version of the image
+        Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
+        image = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        // Copy the image over to the new instance
+        Graphics2D g2D = image.createGraphics();
+        g2D.drawImage(img, 0, 0, null);
+        g2D.dispose();
+        return image;
     }
 }
