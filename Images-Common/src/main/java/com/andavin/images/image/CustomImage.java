@@ -25,10 +25,11 @@ import static java.util.Collections.emptySet;
  */
 public class CustomImage implements Serializable {
 
+    private static final long serialVersionUID = 152608317193555652L;
+
     public static final UUID UNKNOWN_CREATOR = new UUID(
             -7650016060676093479L, -6847602434101430799L);
     private static final int PIXELS_PER_FRAME = 128;
-    private static final long serialVersionUID = 152608317193555652L;
 
     private transient int id = -1;
     private transient Location location;
@@ -235,6 +236,24 @@ public class CustomImage implements Serializable {
                 section.show(player);
             }
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof CustomImage)) {
+            return false;
+        }
+
+        CustomImage image = (CustomImage) obj;
+        return this.direction == image.direction &&
+                this.imageName.equals(image.imageName) &&
+                this.creator.equals(image.creator) &&
+                this.location.equals(image.location);
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {

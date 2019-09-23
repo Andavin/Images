@@ -4,6 +4,7 @@ import com.andavin.images.image.CustomImage;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +19,8 @@ public class FileDataManager implements DataManager {
     private volatile File dataFile;
 
     public FileDataManager(File dataFile) {
-        checkArgument(dataFile.isFile(), "not a file %s", dataFile);
+        checkArgument(!dataFile.exists() || dataFile.isFile(),
+                "not a file %s", dataFile);
         this.dataFile = dataFile;
     }
 
@@ -33,8 +35,19 @@ public class FileDataManager implements DataManager {
             return new ArrayList<>();
         }
 
+        byte[] data;
+        try {
+            data = Files.readAllBytes(this.dataFile.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        if (data.length == 0) {
+            return new ArrayList<>();
+        }
+
         List<CustomImage> images;
-        try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(this.dataFile))) {
+        try (ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(data))) {
 
             int capacity = stream.readInt();
             images = new ArrayList<>(capacity);
@@ -82,6 +95,16 @@ public class FileDataManager implements DataManager {
             this.dataFile = dataFile;
         } else {
             throw new IllegalStateException("Failed to save file " + this.dataFile);
+        }
+    }
+
+    @Override
+    public void delete(CustomImage image) {
+        // We have to read all of the images, remove one from it
+        // and write them all again so as to not overwrite anything
+        List<CustomImage> images = this.load();
+        if (images.remove(image)) {
+            this.saveAll(images);
         }
     }
 }

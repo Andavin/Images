@@ -1,5 +1,7 @@
 package com.andavin.images;
 
+import com.andavin.images.PacketListener.ImageListener;
+import com.andavin.images.command.CommandRegistry;
 import com.andavin.images.data.DataManager;
 import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
@@ -8,6 +10,8 @@ import com.andavin.images.image.CustomImage;
 import com.andavin.images.legacy.LegacyImportManager;
 import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
+import com.andavin.util.Scheduler;
+import com.andavin.util.TimeoutMetadata;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
@@ -26,12 +30,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
+import static com.andavin.reflect.Reflection.setFieldValue;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Collections.emptyList;
 
 /**
  * @since September 20, 2019
@@ -49,17 +53,24 @@ public class Images extends JavaPlugin implements Listener {
      *             imported and add them to the loaded images list
      */
 
-    private DataManager dataManager;
-    private static File imagesDirectory;
     private static final int PIXELS_PER_FRAME = 128;
+    public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
+
+    private static Images instance;
+    private static File imagesDirectory;
+    private static DataManager dataManager;
     private static final List<CustomImage> IMAGES = new ArrayList<>();
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
+    private static final Map<UUID, ImageListener> LISTENER_TASKS = new HashMap<>(4);
 
     @Override
     public void onLoad() {
+        instance = this;
         Logger.initialize(this.getLogger());
         imagesDirectory = this.getDataFolder();
         PacketListener.getImages = () -> IMAGES;
+        setFieldValue(Scheduler.class, null, "instance", this);
+        setFieldValue(TimeoutMetadata.class, null, "instance", this);
     }
 
     @Override
@@ -101,6 +112,7 @@ public class Images extends JavaPlugin implements Listener {
 
         IMAGES.addAll(dataManager.load());
         Logger.info("Loaded {} images...", IMAGES.size());
+        CommandRegistry.registerCommands();
     }
 
     @Override
@@ -119,6 +131,10 @@ public class Images extends JavaPlugin implements Listener {
                 () -> this.refreshImages(player, location));
         BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
+            ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
+            if (listener != null) {
+                listener.click(clicker, image, section, action, hand);
+            }
         });
     }
 
@@ -194,6 +210,66 @@ public class Images extends JavaPlugin implements Listener {
     }
 
     /**
+     * Get the singleton instance of this plugin.
+     *
+     * @return The plugin instance.
+     */
+    public static Images getInstance() {
+        return instance;
+    }
+
+    /**
+     * Get the {@link DataManager} for the data storage.
+     *
+     * @return The data manger.
+     */
+    public static DataManager getDataManager() {
+        return dataManager;
+    }
+
+    /**
+     * Get the directory in which the images are stored.
+     *
+     * @return The image directory.
+     */
+    public static File getImagesDirectory() {
+        return imagesDirectory;
+    }
+
+    /**
+     * Get all the files that are images in the images
+     * data folder.
+     *
+     * @return The image files.
+     */
+    public static List<File> getImageFiles() {
+
+        File[] files = imagesDirectory.listFiles();
+        if (files == null) {
+            return emptyList();
+        }
+
+        List<File> images = new ArrayList<>(files.length);
+        for (File file : files) {
+
+            if (file.isDirectory()) {
+                continue;
+            }
+
+            String path = file.getPath();
+            for (String extension : EXTENSIONS) {
+
+                if (path.endsWith(extension)) {
+                    images.add(file);
+                    break;
+                }
+            }
+        }
+
+        return images;
+    }
+
+    /**
      * Get a {@link File} from the image directory that
      * is the given file name or partially matches the name.
      *
@@ -231,6 +307,66 @@ public class Images extends JavaPlugin implements Listener {
 
         checkArgument(match != null, "§cImage Not Found§f %s", fileName);
         return match;
+    }
+
+    /**
+     * Add a new task to be handled when an action is
+     * performed by the given player.
+     *
+     * @param player The player to add the listener for.
+     * @param task The task to execute when an action is handled.
+     */
+    public static void addListenerTask(Player player, ImageListener task) {
+        LISTENER_TASKS.put(player.getUniqueId(), task);
+    }
+
+    /**
+     * Add a new {@link CustomImage} to the image storage
+     * and save it to the database.
+     *
+     * @param image The image to add.
+     * @return If the image was successfully added.
+     */
+    public static boolean addImage(CustomImage image) {
+
+        if (IMAGES.contains(image)) {
+            return false;
+        }
+
+        dataManager.save(image);
+        synchronized (IMAGES) {
+            IMAGES.add(image);
+        }
+
+        return true;
+    }
+
+    /**
+     * Add all of the given images to the image storage,
+     * but do not save them to the database.
+     *
+     * @param images The images to add.
+     */
+    public static void addImages(List<CustomImage> images) {
+
+        synchronized (IMAGES) {
+            IMAGES.addAll(images);
+        }
+    }
+
+    /**
+     * Remove the given {@link CustomImage} from the image
+     * storage and delete it from the database.
+     *
+     * @param image The image to remove.
+     * @return If the image was successfully removed.
+     */
+    public static boolean removeImage(CustomImage image) {
+
+        synchronized (IMAGES) {
+            dataManager.delete(image);
+            return IMAGES.remove(image);
+        }
     }
 
     private void refreshImages(Player player, Location location) {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * @since September 21, 2019
@@ -82,6 +83,21 @@ abstract class SQLDataManager implements DataManager {
         }
     }
 
+    @Override
+    public void delete(CustomImage image) {
+
+        checkState(image.getId() != -1,
+                "attempted to delete an image with no database ID");
+        try (Connection connection = this.getConnection();
+             PreparedStatement delete = connection.prepareStatement(
+                     "DELETE FROM " + TABLE_NAME + " WHERE `id` = ?")) {
+            delete.setInt(1, image.getId());
+            delete.executeUpdate();
+        } catch (SQLException e) {
+            Logger.severe(e);
+        }
+    }
+
     /**
      * Create a new {@link Connection} to the SQL database
      * with the given properties and credentials specified
@@ -104,7 +120,7 @@ abstract class SQLDataManager implements DataManager {
                     Statement.RETURN_GENERATED_KEYS)) {
 
                 insert.setObject(1, toByteArray(image));
-                insert.execute();
+                insert.executeUpdate();
                 try (ResultSet result = insert.getGeneratedKeys()) {
 
                     if (result.next()) {

@@ -1,18 +1,20 @@
-package com.andavin.images.legacy.command;
+package com.andavin.images.command;
 
-import com.andavin.util.StringUtil;
+import com.andavin.util.Logger;
 import org.apache.commons.lang.ArrayUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.*;
 
+import static com.andavin.util.StringUtil.centerMessage;
+
 @SuppressWarnings("Duplicates")
-final class CmdExecutor extends org.bukkit.command.Command {
+final class CommandExecutor extends org.bukkit.command.Command {
 
     private final BaseCommand command;
 
-    CmdExecutor(BaseCommand command) {
+    CommandExecutor(BaseCommand command) {
         super(command.getName(), command.getDescription(),
                 command.getUsage(), Arrays.asList(command.getAliases()));
         this.command = command;
@@ -21,42 +23,48 @@ final class CmdExecutor extends org.bukkit.command.Command {
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
 
-        BaseCommand cmd = this.getExecutable(this.command, args);
-        if (cmd != this.command) {
-            args = this.trimArgs(cmd, args);
-        }
+        try {
 
-        if (sender instanceof Player) {
+            BaseCommand cmd = this.getExecutable(this.command, args);
+            if (cmd != this.command) {
+                args = this.trimArgs(cmd, args);
+            }
 
-            Player player = (Player) sender;
-            if (!cmd.hasPermission(player, args)) {
-                player.sendMessage("§cInsufficient permission.");
+            if (sender instanceof Player) {
+
+                Player player = (Player) sender;
+                if (!cmd.hasPermission(player, args)) {
+                    player.sendMessage("§cInsufficient permission.");
+                    return true;
+                }
+
+                if (args.length < cmd.getMinimumArgs()) {
+                    sender.sendMessage(" §c§m----------------------------------------------------");
+                    sender.sendMessage(centerMessage("§cNot enough arguments!"));
+                    sender.sendMessage(centerMessage("§7Try §c" + this.getUsage()));
+                    sender.sendMessage(centerMessage("§e" + this.getDescription()));
+                    sender.sendMessage(" §c§m----------------------------------------------------");
+                    return true;
+                }
+
+                cmd.execute(player, label, args);
                 return true;
             }
 
             if (args.length < cmd.getMinimumArgs()) {
                 sender.sendMessage(" §c§m----------------------------------------------------");
-                sender.sendMessage(StringUtil.centerMessage("§cNot enough arguments!"));
-                sender.sendMessage(StringUtil.centerMessage("§7Try §c" + this.getUsage()));
-                sender.sendMessage(StringUtil.centerMessage("§e" + this.getDescription()));
+                sender.sendMessage(centerMessage("§cNot enough arguments!"));
+                sender.sendMessage(centerMessage("§7Try §c" + this.getUsage()));
+                sender.sendMessage(centerMessage("§e" + this.getDescription()));
                 sender.sendMessage(" §c§m----------------------------------------------------");
                 return true;
             }
 
-            cmd.execute(player, label, args);
-            return true;
+            cmd.execute(sender, label, args);
+        } catch (Throwable e) {
+            Logger.handle(e, sender::sendMessage);
         }
 
-        if (args.length < cmd.getMinimumArgs()) {
-            sender.sendMessage(" §c§m----------------------------------------------------");
-            sender.sendMessage(StringUtil.centerMessage("§cNot enough arguments!"));
-            sender.sendMessage(StringUtil.centerMessage("§7Try §c" + this.getUsage()));
-            sender.sendMessage(StringUtil.centerMessage("§e" + this.getDescription()));
-            sender.sendMessage(" §c§m----------------------------------------------------");
-            return true;
-        }
-
-        cmd.execute(sender, label, args);
         return true;
     }
 

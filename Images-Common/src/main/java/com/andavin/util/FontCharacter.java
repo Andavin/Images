@@ -1,4 +1,4 @@
-package com.andavin.images.legacy.util;
+package com.andavin.util;
 
 import java.util.HashMap;
 import java.util.Map;

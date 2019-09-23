@@ -1,4 +1,4 @@
-package com.andavin.images.legacy.util;
+package com.andavin.util;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;

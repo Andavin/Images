@@ -22,7 +22,7 @@ public abstract class PacketListener implements Versioned {
      * @param player The player to set the listener for.
      * @param listener The listener to set to.
      */
-    public abstract void setEntityListener(Player player, EntityListener listener);
+    public abstract void setEntityListener(Player player, ImageListener listener);
 
     /**
      * Call the given listener for the player.
@@ -33,7 +33,7 @@ public abstract class PacketListener implements Versioned {
      * @param hand The hand the player used if applicable.
      * @param listener The listener to call.
      */
-    public static void call(Player player, int entityId, InteractType action, Hand hand, EntityListener listener) {
+    public static void call(Player player, int entityId, InteractType action, Hand hand, ImageListener listener) {
 
         if (entityId < CustomImageSection.DEFAULT_STARTING_ID) {
             return;
@@ -62,7 +62,7 @@ public abstract class PacketListener implements Versioned {
         LEFT_CLICK, RIGHT_CLICK
     }
 
-    public interface EntityListener {
+    public interface ImageListener {
 
         /**
          * Accept and interaction with and entity.

@@ -49,4 +49,11 @@ public interface DataManager {
      * @param images All of the images to save.
      */
     void saveAll(List<CustomImage> images);
+
+    /**
+     * Delete the given custom image from the database.
+     *
+     * @param image The image to delete.
+     */
+    void delete(CustomImage image);
 }

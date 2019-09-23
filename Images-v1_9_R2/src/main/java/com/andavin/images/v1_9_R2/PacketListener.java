@@ -11,7 +11,7 @@ import org.bukkit.entity.Player;
 class PacketListener extends com.andavin.images.PacketListener {
 
     @Override
-    public void setEntityListener(Player player, EntityListener listener) {
+    public void setEntityListener(Player player, ImageListener listener) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
         connection.networkManager.setPacketListener(new PlayerConnectionProxy(connection, listener));
     }

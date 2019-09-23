@@ -24,6 +24,8 @@ import static com.andavin.images.image.CustomImage.writeLocation;
  */
 public class CustomImageSection implements Serializable {
 
+    private static final long serialVersionUID = 572225588300845874L;
+
     /**
      * The starting ID of the item frames.
      */

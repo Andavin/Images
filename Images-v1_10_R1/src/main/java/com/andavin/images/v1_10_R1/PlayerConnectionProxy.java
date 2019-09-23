@@ -1,8 +1,8 @@
 package com.andavin.images.v1_10_R1;
 
 import com.andavin.images.PacketListener;
-import com.andavin.images.PacketListener.EntityListener;
 import com.andavin.images.PacketListener.Hand;
+import com.andavin.images.PacketListener.ImageListener;
 import com.andavin.images.PacketListener.InteractType;
 import net.minecraft.server.v1_10_R1.EnumHand;
 import net.minecraft.server.v1_10_R1.PacketPlayInUseEntity;
@@ -23,9 +23,9 @@ import static com.andavin.reflect.Reflection.getFieldValue;
 class PlayerConnectionProxy extends PlayerConnection {
 
     private static final Field ENTITY_ID = findField(PacketPlayInUseEntity.class, "a");
-    private final EntityListener listener;
+    private final ImageListener listener;
 
-    PlayerConnectionProxy(PlayerConnection connection, EntityListener listener) {
+    PlayerConnectionProxy(PlayerConnection connection, ImageListener listener) {
         super(((CraftServer) Bukkit.getServer()).getServer(), connection.networkManager, connection.player);
         this.listener = listener;
     }
