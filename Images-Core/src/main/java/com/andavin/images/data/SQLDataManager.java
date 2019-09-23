@@ -125,9 +125,6 @@ abstract class SQLDataManager implements DataManager {
 
                     if (result.next()) {
                         image.setId(result.getInt(1));
-                        Logger.info("Set ID to {}", image.getId());
-                    } else {
-                        Logger.info("nothing returned");
                     }
                 }
             }

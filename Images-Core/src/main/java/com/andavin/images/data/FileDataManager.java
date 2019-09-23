@@ -5,6 +5,7 @@ import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +17,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public class FileDataManager implements DataManager {
 
-    private volatile File dataFile;
+    private final File dataFile;
 
     public FileDataManager(File dataFile) {
         checkArgument(!dataFile.exists() || dataFile.isFile(),
@@ -86,15 +87,10 @@ public class FileDataManager implements DataManager {
             for (CustomImage image : images) {
                 stream.writeObject(image);
             }
+
+            Files.move(dataFile.toPath(), this.dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
-        }
-
-        if (!this.dataFile.exists() || this.dataFile.delete()) {
-            dataFile.renameTo(this.dataFile);
-            this.dataFile = dataFile;
-        } else {
-            throw new IllegalStateException("Failed to save file " + this.dataFile);
         }
     }
 
