@@ -49,17 +49,17 @@ public class Images extends JavaPlugin implements Listener {
      *             imported and add them to the loaded images list
      */
 
-    private static final int PIXELS_PER_FRAME = 128;
-    private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
-    private static File imagesDirectory;
-
     private DataManager dataManager;
-    private final List<CustomImage> images = new ArrayList<>();
+    private static File imagesDirectory;
+    private static final int PIXELS_PER_FRAME = 128;
+    private static final List<CustomImage> IMAGES = new ArrayList<>();
+    private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
 
     @Override
     public void onLoad() {
         Logger.initialize(this.getLogger());
         imagesDirectory = this.getDataFolder();
+        PacketListener.getImages = () -> IMAGES;
     }
 
     @Override
@@ -99,13 +99,13 @@ public class Images extends JavaPlugin implements Listener {
             dataManager.initialize();
         }
 
-        this.images.addAll(dataManager.load());
-        Logger.info("Loaded {} images...", this.images.size());
+        IMAGES.addAll(dataManager.load());
+        Logger.info("Loaded {} images...", IMAGES.size());
     }
 
     @Override
     public void onDisable() {
-        dataManager.saveAll(this.images);
+        dataManager.saveAll(IMAGES);
     }
 
     @EventHandler
@@ -117,8 +117,8 @@ public class Images extends JavaPlugin implements Listener {
         Location location = player.getLocation();
         Bukkit.getScheduler().runTaskAsynchronously(this,
                 () -> this.refreshImages(player, location));
-        BRIDGE.addEntityListener(player, (clicker, entityId) -> {
-            Logger.info("Clicking on {}", entityId);
+        BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
+
         });
     }
 
@@ -153,7 +153,10 @@ public class Images extends JavaPlugin implements Listener {
                 player.sendMessage("§aImporting legacy images.\n" +
                         "§eThis will cause sever lag. Please wait...");
                 List<CustomImage> images = LegacyImportManager.importImages(imagesDirectory, dataManager);
-                this.images.addAll(images);
+                synchronized (IMAGES) {
+                    IMAGES.addAll(images);
+                }
+
                 player.sendMessage("§aSuccessfully imported §f" + images.size() + "§a images");
             } catch (IllegalStateException e) {
                 player.sendMessage(e.getMessage());
@@ -176,8 +179,8 @@ public class Images extends JavaPlugin implements Listener {
                 BlockFace direction = LocationUtil.getCardinalDirection(location).getOppositeFace();
                 CustomImage customImage = new CustomImage(player.getUniqueId(), file.getName(), location, direction, image);
                 customImage.refresh(player, location);
-                synchronized (this.images) {
-                    this.images.add(customImage);
+                synchronized (IMAGES) {
+                    IMAGES.add(customImage);
                 }
 
             } catch (IOException e) {
@@ -232,9 +235,9 @@ public class Images extends JavaPlugin implements Listener {
 
     private void refreshImages(Player player, Location location) {
 
-        synchronized (this.images) {
+        synchronized (IMAGES) {
 
-            for (CustomImage image : this.images) {
+            for (CustomImage image : IMAGES) {
                 image.refresh(player, location);
             }
         }

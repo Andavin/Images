@@ -1,13 +1,13 @@
-package com.andavin.images.v1_14_R1;
+package com.andavin.images.v1_13_R2;
 
-import com.andavin.reflect.Reflection;
-import net.minecraft.server.v1_14_R1.*;
+import net.minecraft.server.v1_13_R2.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.BlockFace;
-import org.bukkit.craftbukkit.v1_14_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_14_R1.block.CraftBlock;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_13_R2.CraftWorld;
+import org.bukkit.craftbukkit.v1_13_R2.block.CraftBlock;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.map.MapPalette;
 import org.bukkit.map.MapView;
@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.andavin.reflect.Reflection.findField;
 import static com.andavin.reflect.Reflection.setFieldValue;
 import static java.util.Collections.emptyList;
 
@@ -30,8 +31,8 @@ import static java.util.Collections.emptyList;
 class MapHelper extends com.andavin.images.MapHelper {
 
     private static final int DEFAULT_STARTING_ID = 8000;
+    private static final Field ENTITY_ID = findField(Entity.class, "id");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
-    private static final Field ENTITY_ID = Reflection.findField(Entity.class, "id");
 
     @Override
     protected MapView getWorldMap(int id) {
@@ -39,7 +40,7 @@ class MapHelper extends com.andavin.images.MapHelper {
     }
 
     @Override
-    protected int nextMapId(org.bukkit.World world) {
+    protected int nextMapId(World world) {
         return MAP_IDS.computeIfAbsent(world.getUID(), __ ->
                 new AtomicInteger(DEFAULT_STARTING_ID)).getAndIncrement();
     }
@@ -50,17 +51,17 @@ class MapHelper extends com.andavin.images.MapHelper {
         ItemStack item = new ItemStack(Items.FILLED_MAP);
         item.getOrCreateTag().setInt("map", mapId);
 
-        EntityItemFrame frame = new EntityItemFrame(((CraftWorld) player.getWorld()).getHandle(),
-                new BlockPosition(location.getX(), location.getY(), location.getZ()),
-                CraftBlock.blockFaceToNotch(direction));
+        EntityItemFrame frame = new EntityItemFrame(((CraftWorld) player.getWorld()).getHandle());
         frame.setItem(item, false, false);
+        frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
+        frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
 
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
-        connection.sendPacket(new PacketPlayOutSpawnEntity(frame, EntityTypes.ITEM_FRAME,
-                frame.getDirection().a(), frame.getBlockPosition()));
+        connection.sendPacket(new PacketPlayOutSpawnEntity(frame, 71,
+                frame.direction.a(), frame.getBlockPosition()));
         connection.sendPacket(new PacketPlayOutEntityMetadata(frame.getId(), frame.getDataWatcher(), true));
-        connection.sendPacket(new PacketPlayOutMap(mapId, (byte) 3, false, false, emptyList(), pixels, 0, 0, 128, 128));
+        connection.sendPacket(new PacketPlayOutMap(mapId, (byte) 3, false, emptyList(), pixels, 0, 0, 128, 128));
     }
 
     @Override

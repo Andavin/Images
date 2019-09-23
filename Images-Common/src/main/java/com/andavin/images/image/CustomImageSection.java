@@ -24,50 +24,70 @@ import static com.andavin.images.image.CustomImage.writeLocation;
  */
 public class CustomImageSection implements Serializable {
 
-    private static final AtomicInteger ID_COUNTER = new AtomicInteger(Integer.MAX_VALUE / 4);
+    /**
+     * The starting ID of the item frames.
+     */
+    public static final int DEFAULT_STARTING_ID = Integer.MAX_VALUE / 4;
+    private static final AtomicInteger ID_COUNTER = new AtomicInteger(DEFAULT_STARTING_ID);
 
-    private final int x, y;
     private final byte[] pixels;
     private final BlockFace direction;
 
-    transient Set<UUID> shown = new HashSet<>();
     private transient Location location;
     private transient int frameId, mapId; // Should not be
+    transient Set<UUID> shown = new HashSet<>();
 
-    CustomImageSection(int x, int y, Location location, BlockFace direction, BufferedImage image) {
+    CustomImageSection(Location location, BlockFace direction, BufferedImage image) {
         this.frameId = ID_COUNTER.getAndIncrement();
         this.mapId = MapHelper.getNextMapId(location.getWorld());
-        this.x = x;
-        this.y = y;
         this.location = location;
         this.direction = direction;
         this.pixels = MapHelper.getPixels(image);
     }
 
+    /**
+     * Get the ID of the item frame that this section
+     * of the image is located in.
+     *
+     * @return The frame ID.
+     */
     public int getFrameId() {
         return frameId;
     }
 
+    /**
+     * Get the ID of the map that is located within the
+     * the item frame.
+     *
+     * @return The map ID.
+     */
     public int getMapId() {
         return mapId;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
+    /**
+     * Get the {@link Location} of this item frame section.
+     *
+     * @return The frame location.
+     */
     public Location getLocation() {
         return location;
     }
 
+    /**
+     * Get the direction that this image section is facing.
+     *
+     * @return The direction.
+     */
     public BlockFace getDirection() {
         return direction;
     }
 
+    /**
+     * Show this image section to the given player.
+     *
+     * @param player The player to show to.
+     */
     public void show(Player player) {
 
         if (this.shown.add(player.getUniqueId())) {
@@ -75,6 +95,11 @@ public class CustomImageSection implements Serializable {
         }
     }
 
+    /**
+     * Hide this image section from the given player.
+     *
+     * @param player The player to hide from.
+     */
     public void hide(Player player) {
 
         if (this.shown.remove(player.getUniqueId())) {

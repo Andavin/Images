@@ -1,7 +1,7 @@
-package com.andavin.images.v1_14_R1;
+package com.andavin.images.v1_13_R2;
 
-import net.minecraft.server.v1_14_R1.PlayerConnection;
-import org.bukkit.craftbukkit.v1_14_R1.entity.CraftPlayer;
+import net.minecraft.server.v1_13_R2.PlayerConnection;
+import org.bukkit.craftbukkit.v1_13_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 /**

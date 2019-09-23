@@ -1,13 +1,15 @@
-package com.andavin.images.v1_8_R3;
+package com.andavin.images.v1_13_R2;
 
 import com.andavin.images.PacketListener;
 import com.andavin.images.PacketListener.EntityListener;
 import com.andavin.images.PacketListener.Hand;
 import com.andavin.images.PacketListener.InteractType;
-import net.minecraft.server.v1_8_R3.MinecraftServer;
-import net.minecraft.server.v1_8_R3.PacketPlayInUseEntity;
-import net.minecraft.server.v1_8_R3.PacketPlayInUseEntity.EnumEntityUseAction;
-import net.minecraft.server.v1_8_R3.PlayerConnection;
+import net.minecraft.server.v1_13_R2.EnumHand;
+import net.minecraft.server.v1_13_R2.PacketPlayInUseEntity;
+import net.minecraft.server.v1_13_R2.PacketPlayInUseEntity.EnumEntityUseAction;
+import net.minecraft.server.v1_13_R2.PlayerConnection;
+import org.bukkit.Bukkit;
+import org.bukkit.craftbukkit.v1_13_R2.CraftServer;
 
 import java.lang.reflect.Field;
 
@@ -24,15 +26,15 @@ class PlayerConnectionProxy extends PlayerConnection {
     private final EntityListener listener;
 
     PlayerConnectionProxy(PlayerConnection connection, EntityListener listener) {
-        super(MinecraftServer.getServer(), connection.networkManager, connection.player);
+        super(((CraftServer) Bukkit.getServer()).getServer(), connection.networkManager, connection.player);
         this.listener = listener;
     }
 
     @Override
     public void a(PacketPlayInUseEntity packet) {
         PacketListener.call(this.player.getBukkitEntity(), getFieldValue(ENTITY_ID, packet),
-                packet.a() == EnumEntityUseAction.ATTACK ? InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
-                Hand.MAIN_HAND, this.listener);
+                packet.b() == EnumEntityUseAction.ATTACK ? InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
+                packet.c() == EnumHand.MAIN_HAND ? Hand.MAIN_HAND : Hand.OFF_HAND, this.listener);
         super.a(packet);
     }
 }

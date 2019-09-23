@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.List;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -37,7 +36,7 @@ public class CustomImage implements Serializable {
     private final UUID creator;
     private final String imageName;
     private final BlockFace direction;
-    private final List<CustomImageSection> sections = new ArrayList<>();
+    private final Map<Integer, CustomImageSection> sections = new HashMap<>();
 
     public CustomImage(String imageName, Location location, BlockFace direction, BufferedImage image) {
         this(UNKNOWN_CREATOR, imageName, location, direction, image);
@@ -52,24 +51,65 @@ public class CustomImage implements Serializable {
         this.update(image);
     }
 
+    /**
+     * Get the ID of this image that is used for
+     * a database.
+     *
+     * @return The database ID.
+     */
     public int getId() {
         return id;
     }
 
+    /**
+     * Set the ID of this image that is used for
+     * the database.
+     *
+     * @param id The ID to set to.
+     */
     public void setId(int id) {
         this.id = id;
     }
 
+    /**
+     * Get the unique ID of the player who created
+     * this image.
+     *
+     * @return The image creator or {@link #UNKNOWN_CREATOR} if
+     *         there is no creator.
+     */
     public UUID getCreator() {
         return creator;
     }
 
+    /**
+     * Get the name of the image file.
+     *
+     * @return The image name.
+     */
     public String getImageName() {
         return imageName;
     }
 
+    /**
+     * Get the direction in which this image is facing.
+     *
+     * @return The direction.
+     */
     public BlockFace getDirection() {
         return direction;
+    }
+
+    /**
+     * Get the {@link CustomImageSection} that has the
+     * entity item frame ID in this image.
+     *
+     * @param frameId The frame ID to get the section for.
+     * @return The section or {@code null} if the
+     *         section is not found.
+     */
+    public CustomImageSection getSection(int frameId) {
+        return this.sections.get(frameId);
     }
 
     /**
@@ -81,7 +121,7 @@ public class CustomImage implements Serializable {
      */
     public void refresh(Player player, Location location) {
 
-        for (CustomImageSection section : this.sections) {
+        for (CustomImageSection section : this.sections.values()) {
 
             boolean sameWorld = section.getLocation().getWorld().equals(location.getWorld());
             if (sameWorld) {
@@ -182,15 +222,16 @@ public class CustomImage implements Serializable {
                         break;
                 }
 
-                this.sections.add(new CustomImageSection(x, y, loc, this.direction,
+                CustomImageSection section = new CustomImageSection(loc, this.direction,
                         image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
-                                PIXELS_PER_FRAME, PIXELS_PER_FRAME)));
+                                PIXELS_PER_FRAME, PIXELS_PER_FRAME));
+                this.sections.put(section.getFrameId(), section);
             }
         }
 
         for (Player player : players) {
 
-            for (CustomImageSection section : this.sections) {
+            for (CustomImageSection section : this.sections.values()) {
                 section.show(player);
             }
         }
