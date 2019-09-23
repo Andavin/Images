@@ -1,0 +1,33 @@
+###############################################################
+# +---------------------------------------------------------+ #
+# |                    Images Configuration                 | #
+# +---------------------------------------------------------+ #
+###############################################################
+
+database:
+  # The type of database that can be used
+  # Options: MYSQL, SQLITE, FILE - Default: SQLITE
+  type: SQLITE
+  # If using MYSQL above, below is the applicable login information
+  # The IP or hostname of the database
+  host: localhost
+  # The port to connect on
+  port: 3306
+  # The database or catalog to initially connect to
+  schema: test
+  # The username and password to login with
+  user: username
+  password: password
+  # If the database needs to be initialized (e.g. the tables created etc.)
+  # Unless you manually manage your database you probably won't need to touch this
+  initialize: true
+
+permissions:
+
+  # Note that, if moving to a legacy version (1.0.x-SNAPSHOT), then
+  # images should be re-created before enabling this feature
+
+  # If images, once created, should only be able to be modified
+  # by the original image creator
+  # This excludes players with the permission 'images.restricted.bypass'
+  creator-restricted: false

@@ -1,7 +1,0 @@
-name: ${project.name}
-version: ${project.version}
-main: com.andavin.images.Images
-authors: [ 'Andavin' ]
-description: ${project.description}
-website: ${project.url}
-softdepend: [ 'Multiverse-Core', 'PlotSquared' ]
