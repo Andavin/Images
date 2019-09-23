@@ -115,11 +115,6 @@ public class Images extends JavaPlugin implements Listener {
         CommandRegistry.registerCommands();
     }
 
-    @Override
-    public void onDisable() {
-        dataManager.saveAll(IMAGES);
-    }
-
     @EventHandler
     // This is called directly after the PlayerConnection
     // is set as the packetListener for the player
