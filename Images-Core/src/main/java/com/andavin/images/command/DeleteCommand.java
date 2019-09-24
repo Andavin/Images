@@ -59,7 +59,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
                 Scheduler.async(() -> {
 
                     if (this.deleting.remove(player.getUniqueId()) && Images.removeImage(image)) {
-                        image.hide();
+                        image.destroy();
                         player.sendMessage("§aImage successfully deleted");
                     } else {
                         player.sendMessage("§cFailed to delete image");

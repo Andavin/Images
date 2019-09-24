@@ -19,6 +19,7 @@ import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.andavin.util.MinecraftVersion.v1_13;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Created on February 14, 2018
@@ -36,23 +39,41 @@ import static com.andavin.util.MinecraftVersion.v1_13;
  */
 final class CreateCommand extends BaseCommand implements Listener {
 
-    private final Map<UUID, File> creating = new HashMap<>();
+    private final Map<UUID, CreateImageTask> creating = new HashMap<>();
 
     CreateCommand() {
         super("create", "images.command.create");
         this.setAliases("new", "add", "load");
         this.setMinimumArgs(1);
-        this.setUsage("/image create <image name>");
+        this.setUsage("/image create <image name> [scale percent]");
         this.setDesc("Create and and begin pasting a new custom image");
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
     }
 
     @Override
     public void execute(Player player, String label, String[] args) {
-        String image = StringUtils.join(args, ' ');
-        File imageFile = Images.getImageFile(image);
+
+        File imageFile = Images.getImageFile(args[0]);
+        double scale;
+        if (args.length > 1) {
+
+            try {
+                scale = Double.parseDouble(args[1]) / 100;
+            } catch (NumberFormatException e) {
+                player.sendMessage("§cInvalid scale §f" + args[1]);
+                return;
+            }
+
+            if (scale < 0.1) {
+                player.sendMessage("§cScale must be more than 1%, but got §f" + scale * 100 + '%');
+                return;
+            }
+        } else {
+            scale = 1;
+        }
+
         UUID id = player.getUniqueId();
-        this.creating.put(id, imageFile);
+        this.creating.put(id, new CreateImageTask(imageFile, scale));
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
                 "§eRight Click to place§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.creating.containsKey(id));
@@ -67,7 +88,7 @@ final class CreateCommand extends BaseCommand implements Listener {
 
                 String name = file.getName();
                 if (StringUtils.startsWithIgnoreCase(name, args[0])) {
-                    completions.add(name);
+                    completions.add(name.replace(' ', '_'));
                 }
             });
         }
@@ -77,8 +98,8 @@ final class CreateCommand extends BaseCommand implements Listener {
     public void onInteract(PlayerInteractEvent event) {
 
         Player player = event.getPlayer();
-        File imageFile = this.creating.remove(player.getUniqueId());
-        if (imageFile == null) {
+        CreateImageTask task = this.creating.remove(player.getUniqueId());
+        if (task == null) {
             return;
         }
 
@@ -117,16 +138,14 @@ final class CreateCommand extends BaseCommand implements Listener {
                 Scheduler.async(() -> {
 
                     player.sendMessage("§aStarting image paste");
-                    BufferedImage image;
-                    try {
-                        image = ImageIO.read(imageFile);
-                    } catch (IOException e) {
+                    BufferedImage image = task.readImage();
+                    if (image == null) {
                         player.sendMessage("§cInvalid image file! Please choose another.");
                         return;
                     }
 
                     CustomImage customImage = new CustomImage(player.getUniqueId(),
-                            imageFile.getName(), location, direction, image);
+                            task.imageFile.getName(), location, direction, image);
                     customImage.refresh(player, playerLocation);
                     if (Images.addImage(customImage)) {
                         player.sendMessage("§aSuccessfully created image§f " + customImage.getImageName());
@@ -150,6 +169,54 @@ final class CreateCommand extends BaseCommand implements Listener {
         Player player = event.getPlayer();
         if (this.creating.remove(player.getUniqueId()) != null) {
             player.sendMessage("§cCreation cancelled");
+        }
+    }
+
+    private static class CreateImageTask {
+
+        private final double scale;
+        private final File imageFile;
+
+        CreateImageTask(File imageFile, double scale) {
+            checkArgument(scale > 0,
+                    "§cScale must be greater than zero§f %s", scale);
+            this.scale = scale;
+            this.imageFile = checkNotNull(imageFile);
+        }
+
+        /**
+         * Read the image file held within this task
+         * at the correct scale.
+         *
+         * @return The read image or {@code null} if the
+         *         image failed to read.
+         */
+        BufferedImage readImage() {
+
+            try {
+
+                BufferedImage image = ImageIO.read(imageFile);
+                if (this.scale == 1) {
+                    return image;
+                }
+
+                Image scaled = image.getScaledInstance(
+                        (int) Math.ceil(image.getWidth() * this.scale),
+                        (int) Math.ceil(image.getHeight() * this.scale),
+                        Image.SCALE_SMOOTH
+                );
+
+                BufferedImage other = new BufferedImage(scaled.getWidth(null),
+                        scaled.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+                // Copy the image over to the new instance
+                Graphics2D graphics = other.createGraphics();
+                graphics.drawImage(scaled, 0, 0, null);
+                graphics.dispose();
+                return other;
+
+            } catch (IOException e) {
+                return null;
+            }
         }
     }
 }

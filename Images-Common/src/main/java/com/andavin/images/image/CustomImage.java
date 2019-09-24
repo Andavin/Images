@@ -140,12 +140,13 @@ public class CustomImage implements Serializable {
     }
 
     /**
-     * Hide this image from all players that it has been shown to
-     * if they are currently online.
+     * Destroy all of the sections of this image and hide it
+     * from all players that it has been shown to if they are
+     * currently online.
      *
      * @return The players that the image was hidden from.
      */
-    public Set<Player> hide() {
+    public Set<Player> destroy() {
 
         int sections = this.sections.size();
         if (sections != 0) {
@@ -177,7 +178,7 @@ public class CustomImage implements Serializable {
      */
     public void update(BufferedImage image) {
 
-        Set<Player> players = this.hide();
+        Set<Player> players = this.destroy();
         BlockFace face;
         switch (this.direction) {
             case UP:
@@ -227,13 +228,6 @@ public class CustomImage implements Serializable {
                         image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
                                 PIXELS_PER_FRAME, PIXELS_PER_FRAME));
                 this.sections.put(section.getFrameId(), section);
-            }
-        }
-
-        for (Player player : players) {
-
-            for (CustomImageSection section : this.sections.values()) {
-                section.show(player);
             }
         }
     }
@@ -299,7 +293,8 @@ public class CustomImage implements Serializable {
             return image;
         }
         // Get a scaled version of the image
-        Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME, ySections * PIXELS_PER_FRAME, 1);
+        Image img = image.getScaledInstance(xSections * PIXELS_PER_FRAME,
+                ySections * PIXELS_PER_FRAME, Image.SCALE_DEFAULT);
         image = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
         // Copy the image over to the new instance
         Graphics2D g2D = image.createGraphics();
