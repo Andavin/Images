@@ -150,11 +150,11 @@ public class CustomImage implements Serializable {
         int sections = this.sections.size();
         if (sections != 0) {
 
+            int index = 0;
             int[] ids = new int[sections];
             Set<Player> players = new HashSet<>(sections);
-            for (int i = 0; i < sections; i++) {
-                CustomImageSection section = this.sections.get(i);
-                ids[i] = section.getFrameId();
+            for (CustomImageSection section : this.sections.values()) {
+                ids[index++] = section.getFrameId();
                 section.shown.stream().map(Bukkit::getPlayer)
                         .filter(Objects::nonNull).forEach(players::add);
             }
@@ -262,8 +262,14 @@ public class CustomImage implements Serializable {
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+
         in.defaultReadObject();
         this.location = readLocation(in);
+        CustomImageSection[] sections = this.sections.values().toArray(new CustomImageSection[0]);
+        this.sections.clear();
+        for (CustomImageSection section : sections) {
+            this.sections.put(section.getFrameId(), section);
+        }
     }
 
     static void writeLocation(ObjectOutputStream out, Location location) throws IOException {

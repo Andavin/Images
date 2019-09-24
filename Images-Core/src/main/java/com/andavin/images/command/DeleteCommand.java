@@ -40,7 +40,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
         UUID id = player.getUniqueId();
         this.deleting.add(id);
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
-                "§aRight Click to delete§7 - §cLeft Click to cancel"),
+                "§eRight Click to delete§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.deleting.contains(id));
         Images.addListenerTask(player, (clicker, image, section, action, hand) -> {
 
@@ -58,7 +58,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
                 Scheduler.async(() -> {
 
-                    if (Images.removeImage(image)) {
+                    if (this.deleting.remove(player.getUniqueId()) && Images.removeImage(image)) {
                         image.hide();
                         player.sendMessage("§aImage successfully deleted");
                     } else {

@@ -20,6 +20,7 @@ public class ImageCommand extends BaseCommand {
         this.setDesc("Manage custom images.");
         this.setUsage("/image [create|delete|list|import]");
         this.addChild(new CreateCommand());
+        this.addChild(new DeleteCommand());
         this.addChild(new ListCommand());
         this.addChild(new ImportCommand());
 //        this.addChild(new SizeCommand());

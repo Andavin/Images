@@ -55,7 +55,8 @@ public interface Versioned {
 
         Class<T> found;
         try {
-            found = findClass(VERSION_PREFIX + clazz.getName().substring(PACKAGE.length()));
+            String name = clazz.getName();
+            found = findClass(VERSION_PREFIX + name.substring(name.lastIndexOf('.')));
         } catch (UncheckedClassNotFoundException e) {
             throw new UnsupportedOperationException("Class " + clazz +
                     " is not currently supported for version " + MinecraftVersion.CURRENT);

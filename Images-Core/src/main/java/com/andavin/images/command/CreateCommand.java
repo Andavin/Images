@@ -3,6 +3,8 @@ package com.andavin.images.command;
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
 import com.andavin.util.ActionBarUtil;
+import com.andavin.util.LocationUtil;
+import com.andavin.util.MinecraftVersion;
 import com.andavin.util.Scheduler;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -24,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import static com.andavin.util.MinecraftVersion.v1_13;
 
 /**
  * Created on February 14, 2018
@@ -50,7 +54,7 @@ final class CreateCommand extends BaseCommand implements Listener {
         UUID id = player.getUniqueId();
         this.creating.put(id, imageFile);
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
-                "§aRight Click to place§7 - §cLeft Click to cancel"),
+                "§eRight Click to place§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.creating.containsKey(id));
     }
 
@@ -83,16 +87,36 @@ final class CreateCommand extends BaseCommand implements Listener {
             case RIGHT_CLICK_BLOCK:
 
                 event.setCancelled(true);
-                BlockFace direction = event.getBlockFace();
-                Block block = event.getClickedBlock().getRelative(direction);
-                // Set the yaw and pitch to the players so we have a good direction
-                Location location = block.getLocation();
+                BlockFace direction;
+                Location location;
                 Location playerLocation = player.getLocation();
-                location.setYaw(playerLocation.getYaw());
-                location.setPitch(playerLocation.getPitch());
+                if (event.getClickedBlock() != null) {
+                    direction = event.getBlockFace();
+                    Block block = event.getClickedBlock().getRelative(direction);
+                    // Set the yaw and pitch to the players so we have a good direction
+                    location = block.getLocation();
+                    location.setYaw(playerLocation.getYaw());
+                    location.setPitch(playerLocation.getPitch());
+                } else {
+                    direction = LocationUtil.getDirection(playerLocation,
+                            false, true).getOppositeFace();
+                    location = playerLocation.clone().add(0, 1, 0);
+                }
+
+                if (direction == BlockFace.SELF || MinecraftVersion.greaterThanOrEqual(v1_13)) {
+
+                    switch (direction) {
+                        case UP:
+                        case DOWN:
+                        case SELF:
+                            player.sendMessage("§cUnsupported direction!");
+                            return;
+                    }
+                }
 
                 Scheduler.async(() -> {
 
+                    player.sendMessage("§aStarting image paste");
                     BufferedImage image;
                     try {
                         image = ImageIO.read(imageFile);
