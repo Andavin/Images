@@ -35,16 +35,6 @@ import static java.util.Collections.emptyList;
  */
 public class Images extends JavaPlugin implements Listener {
 
-    /*
-     * Commands:
-     * - list
-     * - create <image> [scale]
-     * - resize [scale] // Will interact with the image to resize
-     * - delete // Will interact with the image to resize
-     * - import // Will save images and then tell the player how many were
-     *             imported and add them to the loaded images list
-     */
-
     private static final int PIXELS_PER_FRAME = 128;
     public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
 
@@ -114,7 +104,7 @@ public class Images extends JavaPlugin implements Listener {
 
         Player player = event.getPlayer();
         Location location = player.getLocation();
-        Scheduler.async(() -> this.refreshImages(player, location));
+        Scheduler.laterAsync(() -> this.refreshImages(player, location), 20L);
         BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
             ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
@@ -128,7 +118,7 @@ public class Images extends JavaPlugin implements Listener {
     public void onWorld(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
         Location location = player.getLocation();
-        Scheduler.async(() -> this.refreshImages(player, location));
+        Scheduler.laterAsync(() -> this.refreshImages(player, location), 20L);
     }
 
     @EventHandler
