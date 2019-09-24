@@ -63,12 +63,12 @@ public abstract class BaseCommand {
      * system, where the player is standing, pretty much any permission
      * check possible.
      *
-     * @param player The player attempting to execute this command.
+     * @param sender The player attempting to execute this command.
      * @param args The arguments given in the command.
      * @return Whether the player has permission to use this command.
      */
-    public boolean hasPermission(Player player, String[] args) {
-        return player.hasPermission(this.permission);
+    public boolean hasPermission(CommandSender sender, String[] args) {
+        return sender.hasPermission(this.permission);
     }
 
     /**

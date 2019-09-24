@@ -35,8 +35,7 @@ public class ImageCommand extends BaseCommand {
         }
 
         for (BaseCommand command : new HashSet<>(this.getChildren().values())) {
-            player.spigot().sendMessage(new ComponentBuilder(
-                    "§e§l" + command.getUsage() + "§7 - §a" + command.getDescription())
+            player.spigot().sendMessage(new ComponentBuilder("§e§l" + command.getUsage())
                     .event(new HoverEvent(Action.SHOW_TEXT, new ComponentBuilder(
                             "§a" + command.getDescription()).create()))
                     .event(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, command.getUsage())).create());

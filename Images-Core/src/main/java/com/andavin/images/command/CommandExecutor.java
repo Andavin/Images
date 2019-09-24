@@ -30,37 +30,25 @@ final class CommandExecutor extends org.bukkit.command.Command {
                 args = this.trimArgs(cmd, args);
             }
 
-            if (sender instanceof Player) {
-
-                Player player = (Player) sender;
-                if (!cmd.hasPermission(player, args)) {
-                    player.sendMessage("§cInsufficient permission.");
-                    return true;
-                }
-
-                if (args.length < cmd.getMinimumArgs()) {
-                    sender.sendMessage(" §c§m----------------------------------------------------");
-                    sender.sendMessage(centerMessage("§cNot enough arguments!"));
-                    sender.sendMessage(centerMessage("§7Try §c" + this.getUsage()));
-                    sender.sendMessage(centerMessage("§e" + this.getDescription()));
-                    sender.sendMessage(" §c§m----------------------------------------------------");
-                    return true;
-                }
-
-                cmd.execute(player, label, args);
+            if (!cmd.hasPermission(sender, args)) {
+                sender.sendMessage("§cInsufficient permission.");
                 return true;
             }
 
             if (args.length < cmd.getMinimumArgs()) {
                 sender.sendMessage(" §c§m----------------------------------------------------");
                 sender.sendMessage(centerMessage("§cNot enough arguments!"));
-                sender.sendMessage(centerMessage("§7Try §c" + this.getUsage()));
-                sender.sendMessage(centerMessage("§e" + this.getDescription()));
+                sender.sendMessage(centerMessage("§7Try §c" + cmd.getUsage()));
+                sender.sendMessage(centerMessage("§e" + cmd.getDescription()));
                 sender.sendMessage(" §c§m----------------------------------------------------");
                 return true;
             }
 
-            cmd.execute(sender, label, args);
+            if (sender instanceof Player) {
+                cmd.execute((Player) sender, label, args);
+            } else {
+                cmd.execute(sender, label, args);
+            }
         } catch (Throwable e) {
             Logger.handle(e, sender::sendMessage);
         }
