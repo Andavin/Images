@@ -3,6 +3,7 @@ package com.andavin.images.command;
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
 import com.andavin.images.legacy.LegacyImportManager;
+import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
 import org.bukkit.entity.Player;
 
@@ -49,7 +50,9 @@ public class ImportCommand extends BaseCommand {
                 "§eThis will cause sever lag. Please wait...");
         List<CustomImage> importedImages = LegacyImportManager.importImages(
                 Images.getImagesDirectory(), Images.getDataManager());
-        Images.addImages(importedImages);
-        player.sendMessage("§aSuccessfully imported §f" + importedImages.size() + "§a images");
+        Scheduler.async(() -> {
+            Images.addImages(importedImages);
+            player.sendMessage("§aSuccessfully imported §f" + importedImages.size() + "§a images");
+        });
     }
 }

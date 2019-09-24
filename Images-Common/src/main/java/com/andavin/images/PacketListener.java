@@ -2,10 +2,13 @@ package com.andavin.images;
 
 import com.andavin.images.image.CustomImage;
 import com.andavin.images.image.CustomImageSection;
+import com.andavin.util.Scheduler;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.function.Supplier;
+
+import static com.andavin.images.image.CustomImageSection.DEFAULT_STARTING_ID;
 
 /**
  * @since September 21, 2019
@@ -35,23 +38,26 @@ public abstract class PacketListener implements Versioned {
      */
     public static void call(Player player, int entityId, InteractType action, Hand hand, ImageListener listener) {
 
-        if (entityId < CustomImageSection.DEFAULT_STARTING_ID) {
+        if (entityId < DEFAULT_STARTING_ID) {
             return;
         }
 
-        List<CustomImage> images = getImages.get();
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (images) {
+        Scheduler.async(() -> {
 
-            for (CustomImage image : images) {
+            List<CustomImage> images = getImages.get();
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
+            synchronized (images) {
 
-                CustomImageSection section = image.getSection(entityId);
-                if (section != null) {
-                    listener.click(player, image, section, action, hand);
-                    return;
+                for (CustomImage image : images) {
+
+                    CustomImageSection section = image.getSection(entityId);
+                    if (section != null) {
+                        listener.click(player, image, section, action, hand);
+                        return;
+                    }
                 }
             }
-        }
+        });
     }
 
     public enum Hand {
