@@ -7,16 +7,11 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
-import com.andavin.images.legacy.LegacyImportManager;
-import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.block.BlockFace;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,10 +21,7 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 import static com.andavin.reflect.Reflection.setFieldValue;
@@ -122,8 +114,7 @@ public class Images extends JavaPlugin implements Listener {
 
         Player player = event.getPlayer();
         Location location = player.getLocation();
-        Bukkit.getScheduler().runTaskAsynchronously(this,
-                () -> this.refreshImages(player, location));
+        Scheduler.async(() -> this.refreshImages(player, location));
         BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
             ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
@@ -137,8 +128,7 @@ public class Images extends JavaPlugin implements Listener {
     public void onWorld(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
         Location location = player.getLocation();
-        Bukkit.getScheduler().runTaskAsynchronously(this,
-                () -> this.refreshImages(player, location));
+        Scheduler.async(() -> this.refreshImages(player, location));
     }
 
     @EventHandler
@@ -148,60 +138,8 @@ public class Images extends JavaPlugin implements Listener {
         if (from.getBlockX() >> 4 != to.getBlockX() >> 4 ||
                 from.getBlockZ() >> 4 != to.getBlockZ() >> 4) {
             Player player = event.getPlayer();
-            Bukkit.getScheduler().runTaskAsynchronously(this,
-                    () -> this.refreshImages(player, to));
+            Scheduler.async(() -> this.refreshImages(player, to));
         }
-    }
-
-    // TODO figure out why it's so slow after the command
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
-        Player player = (Player) sender;
-        if (args[0].equalsIgnoreCase("import")) {
-
-            try {
-                player.sendMessage("§aImporting legacy images.\n" +
-                        "§eThis will cause sever lag. Please wait...");
-                List<CustomImage> images = LegacyImportManager.importImages(imagesDirectory, dataManager);
-                synchronized (IMAGES) {
-                    IMAGES.addAll(images);
-                }
-
-                player.sendMessage("§aSuccessfully imported §f" + images.size() + "§a images");
-            } catch (IllegalStateException e) {
-                player.sendMessage(e.getMessage());
-            }
-
-            return true;
-        }
-
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-
-            try {
-
-                File file = getImageFile(args[0]);
-                BufferedImage image = ImageIO.read(file);
-                if (image.getWidth() < PIXELS_PER_FRAME || image.getHeight() < PIXELS_PER_FRAME) {
-                    throw new IllegalArgumentException("§cThe image §l" + file.getName() + "§c is too small! Must be at least 128x128 pixels.");
-                }
-
-                Location location = player.getLocation();
-                BlockFace direction = LocationUtil.getCardinalDirection(location).getOppositeFace();
-                CustomImage customImage = new CustomImage(player.getUniqueId(), file.getName(), location, direction, image);
-                customImage.refresh(player, location);
-                synchronized (IMAGES) {
-                    IMAGES.add(customImage);
-                }
-
-            } catch (IOException e) {
-                Logger.severe(e);
-            } catch (Exception e) {
-                Logger.handle(e, player::sendMessage, true);
-            }
-        });
-
-        return true;
     }
 
     /**

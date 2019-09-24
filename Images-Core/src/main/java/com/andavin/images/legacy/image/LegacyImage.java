@@ -1,7 +1,6 @@
 package com.andavin.images.legacy.image;
 
-import com.andavin.images.legacy.Images;
-import org.bukkit.Bukkit;
+import com.andavin.util.Scheduler;
 import org.bukkit.Location;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.SerializableAs;
@@ -88,7 +87,7 @@ public final class LegacyImage implements ConfigurationSerializable {
      */
     public void destroy() {
 
-        Bukkit.getScheduler().runTask(Images.getInstance(), () -> this.sections.forEach((loc, section) ->
+        Scheduler.sync(() -> this.sections.forEach((loc, section) ->
 
                 loc.getWorld().getNearbyEntities(loc, 1, 1, 1).forEach(entity -> {
 
@@ -146,8 +145,8 @@ public final class LegacyImage implements ConfigurationSerializable {
 
         LegacyImage image = (LegacyImage) o;
         return Objects.equals(this.imageFile, image.imageFile) &&
-               Objects.equals(this.location, image.location) &&
-               Objects.equals(this.sections, image.sections);
+                Objects.equals(this.location, image.location) &&
+                Objects.equals(this.sections, image.sections);
     }
 
     @Override
