@@ -32,9 +32,13 @@ public class ImportCommand extends BaseCommand {
     public void execute(Player player, String label, String[] args) {
 
         if (TimeoutMetadata.isExpired(player, CONFIRM_META)) {
-            player.sendMessage("§eAre you sure you want to import legacy images?");
-            player.sendMessage("§7This can not be undone unless you take a backup of your world.");
-            player.sendMessage("§eRe-type the command to confirm");
+            player.sendMessage(
+                    "§eAre you sure you want to import legacy images?\n" +
+                            "§7This can not be undone unless you\n" +
+                            "§ctake a backup of your world folder.\n" +
+                            "§eRe-type the command to confirm"
+            );
+
             player.setMetadata(CONFIRM_META, new TimeoutMetadata(15, TimeUnit.SECONDS));
             return;
         }
