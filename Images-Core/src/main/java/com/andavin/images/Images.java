@@ -93,9 +93,11 @@ public class Images extends JavaPlugin implements Listener {
             dataManager.initialize();
         }
 
-        IMAGES.addAll(dataManager.load());
-        Logger.info("Loaded {} images...", IMAGES.size());
-        CommandRegistry.registerCommands();
+        Scheduler.laterAsync(() -> {
+            IMAGES.addAll(dataManager.load());
+            Logger.info("Loaded {} images...", IMAGES.size());
+            CommandRegistry.registerCommands();
+        }, 40L);
     }
 
     @EventHandler
