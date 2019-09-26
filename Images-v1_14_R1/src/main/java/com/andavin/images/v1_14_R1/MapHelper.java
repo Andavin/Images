@@ -1,6 +1,5 @@
 package com.andavin.images.v1_14_R1;
 
-import com.andavin.reflect.Reflection;
 import net.minecraft.server.v1_14_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,7 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.andavin.reflect.Reflection.setFieldValue;
+import static com.andavin.reflect.Reflection.*;
 import static java.util.Collections.emptyList;
 
 /**
@@ -30,8 +29,10 @@ import static java.util.Collections.emptyList;
 class MapHelper extends com.andavin.images.MapHelper {
 
     private static final int DEFAULT_STARTING_ID = 8000;
+    private static final Field ENTITY_ID = findField(Entity.class, "id");
+    private static final DataWatcherObject<Integer> ROTATION =
+            getFieldValue(EntityItemFrame.class, null, "g");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
-    private static final Field ENTITY_ID = Reflection.findField(Entity.class, "id");
 
     @Override
     protected MapView getWorldMap(int id) {
@@ -45,7 +46,8 @@ class MapHelper extends com.andavin.images.MapHelper {
     }
 
     @Override
-    protected void createMap(int frameId, int mapId, Player player, Location location, BlockFace direction, byte[] pixels) {
+    protected void createMap(int frameId, int mapId, Player player, Location location,
+                             BlockFace direction, int rotation, byte[] pixels) {
 
         ItemStack item = new ItemStack(Items.FILLED_MAP);
         item.getOrCreateTag().setInt("map", mapId);
@@ -55,6 +57,9 @@ class MapHelper extends com.andavin.images.MapHelper {
                 CraftBlock.blockFaceToNotch(direction));
         frame.setItem(item, false, false);
         setFieldValue(ENTITY_ID, frame, frameId);
+        if (rotation != 0) {
+            frame.getDataWatcher().set(ROTATION, rotation);
+        }
 
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
         connection.sendPacket(new PacketPlayOutSpawnEntity(frame, EntityTypes.ITEM_FRAME,

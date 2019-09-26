@@ -1,7 +1,6 @@
 package com.andavin.images.image;
 
 import com.andavin.images.MapHelper;
-import com.andavin.util.LocationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -124,7 +123,7 @@ public class CustomImage implements Serializable {
 
         for (CustomImageSection section : this.sections.values()) {
 
-            boolean sameWorld = section.getLocation().getWorld().equals(location.getWorld());
+            boolean sameWorld = location != null && section.getLocation().getWorld().equals(location.getWorld());
             if (sameWorld) {
 
                 double distance = section.getLocation().distanceSquared(location);
@@ -135,6 +134,26 @@ public class CustomImage implements Serializable {
                 }
             } else {
                 section.hide(player);
+            }
+        }
+    }
+
+    /**
+     * Remove a player from this image so that it can be
+     * refreshed for them in the future.
+     *
+     * @param player The player to remove from this image.
+     * @param online If the player is online and the images
+     *               should be hidden from them.
+     */
+    public void remove(Player player, boolean online) {
+
+        for (CustomImageSection section : this.sections.values()) {
+
+            if (online) {
+                section.hide(player);
+            } else {
+                section.shown.remove(player.getUniqueId());
             }
         }
     }
@@ -180,22 +199,28 @@ public class CustomImage implements Serializable {
 
         Set<Player> players = this.destroy();
         BlockFace face;
+        int rotation;
         switch (this.direction) {
             case UP:
             case DOWN:
-                face = LocationUtil.getCardinalDirection(location).getOppositeFace();
+                face = this.direction;
+                rotation = 0;
                 break;
             case NORTH:
                 face = BlockFace.SOUTH;
+                rotation = 0;
                 break;
             case SOUTH:
                 face = BlockFace.NORTH;
+                rotation = 0;
                 break;
             case EAST:
                 face = BlockFace.WEST;
+                rotation = 0;
                 break;
             case WEST:
                 face = BlockFace.EAST;
+                rotation = 0;
                 break;
             default:
                 throw new IllegalStateException("Invalid direction " + this.direction);
@@ -210,6 +235,12 @@ public class CustomImage implements Serializable {
 
                 Location loc = location.clone();
                 switch (face) {
+                    case UP:
+                        loc.add(x, 0, y);
+                        break;
+                    case DOWN:
+                        loc.add(x, 0, -y);
+                        break;
                     case SOUTH:
                         loc.add(-x, -y, 0);
                         break;
@@ -225,10 +256,14 @@ public class CustomImage implements Serializable {
                 }
 
                 CustomImageSection section = new CustomImageSection(loc, this.direction,
-                        image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
-                                PIXELS_PER_FRAME, PIXELS_PER_FRAME));
+                        rotation, image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
+                        PIXELS_PER_FRAME, PIXELS_PER_FRAME));
                 this.sections.put(section.getFrameId(), section);
             }
+        }
+
+        for (Player player : players) {
+            this.refresh(player, player.getLocation());
         }
     }
 

@@ -222,11 +222,11 @@ public final class LocationUtil {
         if (vertical) {
 
             float pitch = loc.getPitch();
-            if (pitch > 70) {
+            if (pitch < -70) {
                 return BlockFace.UP;
             }
 
-            if (pitch < -70) {
+            if (pitch > 70) {
                 return BlockFace.DOWN;
             }
         }

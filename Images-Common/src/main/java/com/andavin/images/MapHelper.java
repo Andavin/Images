@@ -45,11 +45,12 @@ public abstract class MapHelper implements Versioned {
      * @param mapId The ID of the map to display.
      * @param location The location to display the map at.
      * @param direction The direction to face the map.
+     * @param rotation The rotation to put the map in the display at.
      * @param pixels The pixels to show on the map.
      */
     public static void createMap(Player player, int frameId, int mapId, Location location,
-                                 BlockFace direction, byte[] pixels) {
-        BRIDGE.createMap(frameId, mapId, player, location, direction, pixels);
+                                 BlockFace direction, int rotation, byte[] pixels) {
+        BRIDGE.createMap(frameId, mapId, player, location, direction, rotation, pixels);
     }
 
     /**
@@ -94,15 +95,16 @@ public abstract class MapHelper implements Versioned {
      * Create and send a new map to the given player to be displayed
      * with the given information.
      *
-     * @param player The player to display the map to.
      * @param frameId The ID of the item frame for the map.
      * @param mapId The ID of the map to display.
+     * @param player The player to display the map to.
      * @param location The location to display the map at.
      * @param direction The direction to face the map.
+     * @param rotation The rotation to put the map in the display at.
      * @param pixels The pixels to show on the map.
      */
     protected abstract void createMap(int frameId, int mapId, Player player, Location location,
-                                      BlockFace direction, byte[] pixels);
+                                      BlockFace direction, int rotation, byte[] pixels);
 
     /**
      * Destroy all of the maps with the given IDs for

@@ -46,7 +46,7 @@ class MapHelper extends com.andavin.images.MapHelper {
     }
 
     @Override
-    protected void createMap(int frameId, int mapId, Player player, Location location, BlockFace direction, byte[] pixels) {
+    protected void createMap(int frameId, int mapId, Player player, Location location, BlockFace direction, int rotation, byte[] pixels) {
 
         ItemStack item = new ItemStack(Items.FILLED_MAP);
         item.setData(mapId);

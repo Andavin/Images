@@ -19,6 +19,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -110,6 +111,21 @@ public class Images extends JavaPlugin implements Listener {
             ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
             if (listener != null) {
                 listener.click(clicker, image, section, action, hand);
+            }
+        });
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+
+        Player player = event.getPlayer();
+        Scheduler.async(() -> {
+
+            synchronized (IMAGES) {
+
+                for (CustomImage image : IMAGES) {
+                    image.remove(player, false);
+                }
             }
         });
     }

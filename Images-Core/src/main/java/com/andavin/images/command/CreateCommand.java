@@ -119,12 +119,23 @@ final class CreateCommand extends BaseCommand implements Listener {
                     location.setYaw(playerLocation.getYaw());
                     location.setPitch(playerLocation.getPitch());
                 } else {
+
                     direction = LocationUtil.getDirection(playerLocation,
                             false, true).getOppositeFace();
-                    location = playerLocation.clone().add(0, 1, 0);
+                    location = playerLocation.clone();
+                    switch (direction) {
+                        case UP:
+                            break;
+                        case DOWN:
+                            location.add(0, 2, 0);
+                            break;
+                        default:
+                            location.add(0, 1, 0);
+                            break;
+                    }
                 }
 
-                if (direction == BlockFace.SELF || MinecraftVersion.greaterThanOrEqual(v1_13)) {
+                if (direction == BlockFace.SELF || MinecraftVersion.lessThan(v1_13)) {
 
                     switch (direction) {
                         case UP:
@@ -132,6 +143,19 @@ final class CreateCommand extends BaseCommand implements Listener {
                         case SELF:
                             player.sendMessage("§cUnsupported direction!");
                             return;
+                    }
+                } else {
+
+                    switch (direction) {
+                        case UP:
+                        case DOWN:
+
+                            if (LocationUtil.getCardinalDirection(playerLocation) != BlockFace.NORTH) {
+                                player.sendMessage("§cFace north to place an image facing up or down");
+                                return;
+                            }
+
+                            break;
                     }
                 }
 

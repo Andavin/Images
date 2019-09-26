@@ -34,12 +34,14 @@ public class CustomImageSection implements Serializable {
 
     private final byte[] pixels;
     private final BlockFace direction;
+    private final int rotation;
 
     private transient Location location;
     private transient int frameId, mapId; // Should not be
     transient Set<UUID> shown = new HashSet<>();
 
-    CustomImageSection(Location location, BlockFace direction, BufferedImage image) {
+    CustomImageSection(Location location, BlockFace direction, int rotation, BufferedImage image) {
+        this.rotation = rotation;
         this.frameId = ID_COUNTER.getAndIncrement();
         this.mapId = MapHelper.getNextMapId(location.getWorld());
         this.location = location;
@@ -86,6 +88,16 @@ public class CustomImageSection implements Serializable {
     }
 
     /**
+     * Get the amount of rotation that this section is within
+     * it's own space (0-8).
+     *
+     * @return The rotation.
+     */
+    public int getRotation() {
+        return rotation;
+    }
+
+    /**
      * Show this image section to the given player.
      *
      * @param player The player to show to.
@@ -93,7 +105,7 @@ public class CustomImageSection implements Serializable {
     public void show(Player player) {
 
         if (this.shown.add(player.getUniqueId())) {
-            MapHelper.createMap(player, this.frameId, this.mapId, this.location, this.direction, this.pixels);
+            MapHelper.createMap(player, this.frameId, this.mapId, this.location, this.direction, this.rotation, this.pixels);
         }
     }
 
