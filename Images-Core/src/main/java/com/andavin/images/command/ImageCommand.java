@@ -16,7 +16,7 @@ public class ImageCommand extends BaseCommand {
 
     ImageCommand() {
         super("image", "images.command.manage");
-        this.setAliases("customimage", "ci", "images", "img");
+        this.setAliases("customimage", "images", "img");
         this.setDesc("Manage custom images.");
         this.setUsage("/image [create|delete|list|import]");
         this.addChild(new CreateCommand());
