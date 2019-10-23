@@ -7,6 +7,7 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
+import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
@@ -37,12 +38,14 @@ import static java.util.Collections.emptyList;
 public class Images extends JavaPlugin implements Listener {
 
     private static final int PIXELS_PER_FRAME = 128;
+    private static final CustomImage[] EMPTY_IMAGES_ARRAY = new CustomImage[0];
     public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
 
     private static Images instance;
     private static File imagesDirectory;
     private static DataManager dataManager;
     private static final List<CustomImage> IMAGES = new ArrayList<>();
+    private static final Map<UUID, Long> LAST_MOVE_TIMES = new HashMap<>();
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
     private static final Map<UUID, ImageListener> LISTENER_TASKS = new HashMap<>(4);
 
@@ -96,6 +99,24 @@ public class Images extends JavaPlugin implements Listener {
         IMAGES.addAll(dataManager.load());
         Logger.info("Loaded {} images...", IMAGES.size());
         CommandRegistry.registerCommands();
+        Scheduler.repeatAsync(() -> {
+
+            try {
+
+                long now = System.currentTimeMillis();
+                LAST_MOVE_TIMES.forEach((uuid, time) -> {
+
+                    if (now - time > 2500) { // More than 2.5 seconds
+
+                        Player player = Bukkit.getPlayer(uuid);
+                        if (player != null) {
+                            refreshImages(player, player.getLocation());
+                        }
+                    }
+                });
+            } catch (ConcurrentModificationException ignored) {
+            }
+        }, 200, 30);
     }
 
     @EventHandler
@@ -140,10 +161,14 @@ public class Images extends JavaPlugin implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent event) {
 
+        Player player = event.getPlayer();
         Location from = event.getFrom(), to = event.getTo();
+        if (!LocationUtil.isSameBlock(from, to)) {
+            LAST_MOVE_TIMES.put(player.getUniqueId(), System.currentTimeMillis());
+        }
+
         if (from.getBlockX() >> 4 != to.getBlockX() >> 4 ||
                 from.getBlockZ() >> 4 != to.getBlockZ() >> 4) {
-            Player player = event.getPlayer();
             Scheduler.async(() -> this.refreshImages(player, to));
         }
     }
@@ -310,11 +335,13 @@ public class Images extends JavaPlugin implements Listener {
 
     private void refreshImages(Player player, Location location) {
 
+        CustomImage[] images;
         synchronized (IMAGES) {
+            images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
+        }
 
-            for (CustomImage image : IMAGES) {
-                image.refresh(player, location);
-            }
+        for (CustomImage image : images) {
+            image.refresh(player, location);
         }
     }
 }
