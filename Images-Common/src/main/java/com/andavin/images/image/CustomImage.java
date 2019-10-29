@@ -113,6 +113,26 @@ public class CustomImage implements Serializable {
     }
 
     /**
+     * Get the {@link CustomImageSection} that has the
+     * map ID for this image.
+     *
+     * @param mapId The map ID to get the section for.
+     * @return The section or {@code null} if the
+     *         section is not found.
+     */
+    public CustomImageSection getSectionByMap(int mapId) {
+
+        for (CustomImageSection section : this.sections.values()) {
+
+            if (section.getMapId() == mapId) {
+                return section;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Show or hide this image for a player if they are within
      * 64 blocks or outside of 128 blocks of any of its sections.
      *

@@ -28,6 +28,32 @@ public abstract class PacketListener implements Versioned {
     public abstract void setEntityListener(Player player, ImageListener listener);
 
     /**
+     * Get the {@link CustomImageSection} that has the
+     * map ID from an {@link CustomImage}.
+     *
+     * @param mapId The map ID to get the section for.
+     * @return The section or {@code null} if the
+     *         section is not found.
+     */
+    public static CustomImageSection getImageSection(int mapId) {
+
+        List<CustomImage> images = getImages.get();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (images) {
+
+            for (CustomImage image : images) {
+
+                CustomImageSection section = image.getSectionByMap(mapId);
+                if (section != null) {
+                    return section;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /**
      * Call the given listener for the player.
      *
      * @param player The player that interacted.

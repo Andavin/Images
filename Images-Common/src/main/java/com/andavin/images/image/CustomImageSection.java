@@ -98,6 +98,16 @@ public class CustomImageSection implements Serializable {
     }
 
     /**
+     * Get a copy of the pixel color array for
+     * this image section.
+     *
+     * @return The pixels.
+     */
+    public byte[] getPixels() {
+        return pixels.clone();
+    }
+
+    /**
      * Show this image section to the given player.
      *
      * @param player The player to show to.
