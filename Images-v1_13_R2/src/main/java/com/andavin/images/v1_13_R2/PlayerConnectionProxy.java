@@ -5,12 +5,15 @@ import com.andavin.images.PacketListener.Hand;
 import com.andavin.images.PacketListener.ImageListener;
 import com.andavin.images.PacketListener.InteractType;
 import com.andavin.images.image.CustomImageSection;
+import com.andavin.util.Logger;
+import com.andavin.util.Scheduler;
 import net.minecraft.server.v1_13_R2.*;
 import net.minecraft.server.v1_13_R2.PacketPlayInUseEntity.EnumEntityUseAction;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_13_R2.CraftServer;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.andavin.images.v1_13_R2.MapHelper.DEFAULT_STARTING_ID;
 import static com.andavin.reflect.Reflection.findField;
@@ -50,10 +53,31 @@ class PlayerConnectionProxy extends PlayerConnection {
 
                 CustomImageSection section = PacketListener.getImageSection(mapId);
                 if (section != null) {
-                    WorldMap map = ItemWorldMap.getSavedMap(item, player.getWorld()); // Sets a new ID
-                    map.scale = (byte) 3;
-                    map.track = false;
-                    map.colors = section.getPixels();
+
+                    AtomicBoolean complete = new AtomicBoolean();
+                    Scheduler.sync(() -> {
+
+                        WorldMap map = ItemWorldMap.getSavedMap(item, player.getWorld()); // Sets a new ID
+                        map.scale = 3;
+                        map.track = false;
+                        map.colors = section.getPixels();
+                        complete.set(true);
+                        synchronized (complete) {
+                            complete.notify();
+                        }
+                    });
+
+                    synchronized (complete) {
+
+                        while (!complete.get()) {
+
+                            try {
+                                complete.wait();
+                            } catch (InterruptedException e) {
+                                Logger.severe(e);
+                            }
+                        }
+                    }
                 }
             }
         }

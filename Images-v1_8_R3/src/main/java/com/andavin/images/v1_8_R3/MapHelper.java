@@ -30,7 +30,7 @@ import static java.util.Collections.emptyList;
  */
 class MapHelper extends com.andavin.images.MapHelper {
 
-    private static final int DEFAULT_STARTING_ID = 8000;
+    static final int DEFAULT_STARTING_ID = 8000;
     private static final Field ENTITY_ID = findField(Entity.class, "id");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
 

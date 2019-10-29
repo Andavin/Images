@@ -4,13 +4,16 @@ import com.andavin.images.PacketListener;
 import com.andavin.images.PacketListener.Hand;
 import com.andavin.images.PacketListener.ImageListener;
 import com.andavin.images.PacketListener.InteractType;
-import net.minecraft.server.v1_8_R3.MinecraftServer;
-import net.minecraft.server.v1_8_R3.PacketPlayInUseEntity;
+import com.andavin.images.image.CustomImageSection;
+import com.andavin.util.Logger;
+import com.andavin.util.Scheduler;
+import net.minecraft.server.v1_8_R3.*;
 import net.minecraft.server.v1_8_R3.PacketPlayInUseEntity.EnumEntityUseAction;
-import net.minecraft.server.v1_8_R3.PlayerConnection;
 
 import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.andavin.images.v1_8_R3.MapHelper.DEFAULT_STARTING_ID;
 import static com.andavin.reflect.Reflection.findField;
 import static com.andavin.reflect.Reflection.getFieldValue;
 
@@ -33,6 +36,50 @@ class PlayerConnectionProxy extends PlayerConnection {
         PacketListener.call(this.player.getBukkitEntity(), getFieldValue(ENTITY_ID, packet),
                 packet.a() == EnumEntityUseAction.ATTACK ? InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
                 Hand.MAIN_HAND, this.listener);
+        super.a(packet);
+    }
+
+    @Override
+    public void a(PacketPlayInSetCreativeSlot packet) {
+
+        ItemStack item = packet.getItemStack();
+        NBTTagCompound tag = item.getTag();
+        if (tag != null) {
+
+            int mapId = tag.getInt("map");
+            if (mapId >= DEFAULT_STARTING_ID) {
+
+                CustomImageSection section = PacketListener.getImageSection(mapId);
+                if (section != null) {
+
+                    AtomicBoolean complete = new AtomicBoolean();
+                    Scheduler.sync(() -> {
+
+                        WorldMap map = ((ItemWorldMap) item.getItem())
+                                .getSavedMap(item, player.getWorld()); // Sets a new ID
+                        map.scale = 3;
+                        map.colors = section.getPixels();
+                        complete.set(true);
+                        synchronized (complete) {
+                            complete.notify();
+                        }
+                    });
+
+                    synchronized (complete) {
+
+                        while (!complete.get()) {
+
+                            try {
+                                complete.wait();
+                            } catch (InterruptedException e) {
+                                Logger.severe(e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         super.a(packet);
     }
 }
