@@ -51,7 +51,8 @@ class MapHelper extends com.andavin.images.MapHelper {
         item.setData(mapId);
 
         EntityItemFrame frame = new EntityItemFrame(((CraftWorld) player.getWorld()).getHandle());
-        frame.setItem(item);  // Must set this first to avoid updating surrounding blocks
+        frame.setSilent(true); // Don't send the sound packet
+        frame.setItem(item); // Must set this first to avoid updating surrounding blocks
         frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
         frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
