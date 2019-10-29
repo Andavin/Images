@@ -61,6 +61,7 @@ class PlayerConnectionProxy extends PlayerConnection {
                         map.locked = true;
                         map.scale = 3;
                         map.track = false;
+                        map.unlimitedTracking = true;
                         map.colors = section.getPixels();
                         complete.set(true);
                         synchronized (complete) {

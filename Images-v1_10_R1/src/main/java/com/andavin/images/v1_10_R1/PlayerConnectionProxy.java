@@ -45,38 +45,39 @@ class PlayerConnectionProxy extends PlayerConnection {
     public void a(PacketPlayInSetCreativeSlot packet) {
 
         ItemStack item = packet.getItemStack();
-        NBTTagCompound tag = item.getTag();
-        if (tag != null) {
+        if (item == null) {
+            super.a(packet);
+            return;
+        }
 
-            int mapId = tag.getInt("map");
-            if (mapId >= DEFAULT_STARTING_ID) {
+        int mapId = item.getData();
+        if (mapId >= DEFAULT_STARTING_ID) {
 
-                CustomImageSection section = PacketListener.getImageSection(mapId);
-                if (section != null) {
+            CustomImageSection section = PacketListener.getImageSection(mapId);
+            if (section != null) {
 
-                    AtomicBoolean complete = new AtomicBoolean();
-                    Scheduler.sync(() -> {
+                AtomicBoolean complete = new AtomicBoolean();
+                Scheduler.sync(() -> {
 
-                        WorldMap map = ((ItemWorldMap) item.getItem())
-                                .getSavedMap(item, player.getWorld()); // Sets a new ID
-                        map.scale = 3;
-                        map.track = false;
-                        map.colors = section.getPixels();
-                        complete.set(true);
-                        synchronized (complete) {
-                            complete.notify();
-                        }
-                    });
-
+                    WorldMap map = ((ItemWorldMap) item.getItem())
+                            .getSavedMap(item, player.getWorld()); // Sets a new ID
+                    map.scale = 3;
+                    map.track = false;
+                    map.colors = section.getPixels();
+                    complete.set(true);
                     synchronized (complete) {
+                        complete.notify();
+                    }
+                });
 
-                        while (!complete.get()) {
+                synchronized (complete) {
 
-                            try {
-                                complete.wait();
-                            } catch (InterruptedException e) {
-                                Logger.severe(e);
-                            }
+                    while (!complete.get()) {
+
+                        try {
+                            complete.wait();
+                        } catch (InterruptedException e) {
+                            Logger.severe(e);
                         }
                     }
                 }

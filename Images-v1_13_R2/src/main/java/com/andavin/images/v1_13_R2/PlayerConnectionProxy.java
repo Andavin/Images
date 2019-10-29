@@ -60,6 +60,7 @@ class PlayerConnectionProxy extends PlayerConnection {
                         WorldMap map = ItemWorldMap.getSavedMap(item, player.getWorld()); // Sets a new ID
                         map.scale = 3;
                         map.track = false;
+                        map.unlimitedTracking = true;
                         map.colors = section.getPixels();
                         complete.set(true);
                         synchronized (complete) {
