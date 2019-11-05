@@ -16,11 +16,9 @@ import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -145,13 +143,34 @@ public class Images extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         Scheduler.async(() -> {
 
+            CustomImage[] images;
             synchronized (IMAGES) {
+                images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
+            }
 
-                for (CustomImage image : IMAGES) {
-                    image.remove(player, false);
-                }
+            for (CustomImage image : images) {
+                image.remove(player, false);
             }
         });
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onRespawn(PlayerRespawnEvent event) {
+
+        Player player = event.getPlayer();
+        Location location = event.getRespawnLocation();
+        Scheduler.laterAsync(() -> {
+
+            CustomImage[] images;
+            synchronized (IMAGES) {
+                images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
+            }
+
+            for (CustomImage image : images) {
+                image.remove(player, true);
+                image.refresh(player, location);
+            }
+        }, 20L);
     }
 
     @EventHandler
