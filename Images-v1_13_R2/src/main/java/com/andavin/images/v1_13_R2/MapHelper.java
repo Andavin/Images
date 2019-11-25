@@ -55,7 +55,7 @@ class MapHelper extends com.andavin.images.MapHelper {
 
         EntityItemFrame frame = new EntityItemFrame(((CraftWorld) player.getWorld()).getHandle());
         frame.setItem(item, false, false);
-        frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
+        setLocation(frame, location.getX(), location.getY(), location.getZ());
         frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
         if (rotation != 0) {
@@ -87,5 +87,29 @@ class MapHelper extends com.andavin.images.MapHelper {
         }
 
         return colors;
+    }
+
+    private void setLocation(EntityItemFrame entity, double x, double y, double z) {
+
+        entity.locX = MathHelper.a(x, -3.0E7D, 3.0E7D);
+        entity.locY = y;
+        entity.locZ = MathHelper.a(z, -3.0E7D, 3.0E7D);
+        entity.lastX = entity.locX;
+        entity.lastY = entity.locY;
+        entity.lastZ = entity.locZ;
+        entity.yaw = 0;
+        entity.pitch = 0;
+        entity.lastYaw = entity.yaw;
+        entity.lastPitch = entity.pitch;
+        double yawDiff = entity.lastYaw - (float) 0;
+        if (yawDiff < -180.0D) {
+            entity.lastYaw += 360.0F;
+        }
+
+        if (yawDiff >= 180.0D) {
+            entity.lastYaw -= 360.0F;
+        }
+
+        entity.setPosition(entity.locX, entity.locY, entity.locZ);
     }
 }

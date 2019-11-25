@@ -1,6 +1,5 @@
 package com.andavin.images.v1_12_R1;
 
-import com.andavin.reflect.Reflection;
 import net.minecraft.server.v1_12_R1.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -20,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.andavin.reflect.Reflection.findField;
 import static com.andavin.reflect.Reflection.setFieldValue;
 import static java.util.Collections.emptyList;
 
@@ -31,7 +31,7 @@ class MapHelper extends com.andavin.images.MapHelper {
 
     static final int DEFAULT_STARTING_ID = 8000;
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
-    private static final Field ENTITY_ID = Reflection.findField(Entity.class, "id");
+    private static final Field ENTITY_ID = findField(Entity.class, "id");
 
     @Override
     protected MapView getWorldMap(int id) {
@@ -54,7 +54,7 @@ class MapHelper extends com.andavin.images.MapHelper {
         EntityItemFrame frame = new EntityItemFrame(((CraftWorld) player.getWorld()).getHandle());
         frame.setSilent(true); // Don't send the sound packet
         frame.setItem(item); // Must set this first to avoid updating surrounding blocks
-        frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
+        setLocation(frame, location.getX(), location.getY(), location.getZ());
         frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
 
@@ -83,5 +83,29 @@ class MapHelper extends com.andavin.images.MapHelper {
         }
 
         return colors;
+    }
+
+    private void setLocation(EntityItemFrame entity, double x, double y, double z) {
+
+        entity.locX = MathHelper.a(x, -3.0E7D, 3.0E7D);
+        entity.locY = y;
+        entity.locZ = MathHelper.a(z, -3.0E7D, 3.0E7D);
+        entity.lastX = entity.locX;
+        entity.lastY = entity.locY;
+        entity.lastZ = entity.locZ;
+        entity.yaw = 0;
+        entity.pitch = 0;
+        entity.lastYaw = entity.yaw;
+        entity.lastPitch = entity.pitch;
+        double yawDiff = entity.lastYaw - (float) 0;
+        if (yawDiff < -180.0D) {
+            entity.lastYaw += 360.0F;
+        }
+
+        if (yawDiff >= 180.0D) {
+            entity.lastYaw -= 360.0F;
+        }
+
+        entity.setPosition(entity.locX, entity.locY, entity.locZ);
     }
 }
