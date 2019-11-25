@@ -34,6 +34,11 @@ class PlayerConnectionProxy extends PlayerConnection {
     }
 
     @Override
+    public void sendPacket(Packet<?> packet) {
+        super.sendPacket(packet);
+    }
+
+    @Override
     public void a(PacketPlayInUseEntity packet) {
         PacketListener.call(this.player.getBukkitEntity(), getFieldValue(ENTITY_ID, packet),
                 packet.b() == EnumEntityUseAction.ATTACK ? InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
