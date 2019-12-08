@@ -25,7 +25,7 @@ public abstract class PacketListener<T, U> implements Versioned {
      * @param player The player to set the listener for.
      * @param listener The listener to set to.
      */
-    public abstract void setEntityListener(Player player, ImageListener listener);
+    protected abstract void setEntityListener(Player player, ImageListener listener);
 
     /**
      * Handle an incoming use entity packet that signifies
