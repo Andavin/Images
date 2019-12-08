@@ -11,6 +11,7 @@ import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
+import com.comphenix.protocol.ProtocolLibrary;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -19,6 +20,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -39,6 +41,7 @@ public class Images extends JavaPlugin implements Listener {
     private static final CustomImage[] EMPTY_IMAGES_ARRAY = new CustomImage[0];
     public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
 
+    private boolean protocolLib;
     private static Images instance;
     private static File imagesDirectory;
     private static DataManager dataManager;
@@ -62,6 +65,20 @@ public class Images extends JavaPlugin implements Listener {
 
         this.saveDefaultConfig();
         Bukkit.getPluginManager().registerEvents(this, this);
+
+        Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
+        if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
+            this.protocolLib = true;
+            Logger.info("ProtocolLib detected. Enabling generic packet handling...");
+            ProtocolLibrary.getProtocolManager().addPacketListener(
+                    new ProtocolLibListener(this, (clicker, image, section, action, hand) -> {
+
+                        ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
+                        if (listener != null) {
+                            listener.click(clicker, image, section, action, hand);
+                        }
+                    }, BRIDGE));
+        }
 
         FileConfiguration config = this.getConfig();
         String type = config.getString("database.type").toUpperCase(Locale.ENGLISH);
@@ -128,7 +145,11 @@ public class Images extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         Location location = player.getLocation();
         Scheduler.laterAsync(() -> this.refreshImages(player, location), 20L);
-        BRIDGE.createEntityListener(player, (clicker, image, section, action, hand) -> {
+        if (protocolLib) {
+            return;
+        }
+
+        BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
             ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
             if (listener != null) {

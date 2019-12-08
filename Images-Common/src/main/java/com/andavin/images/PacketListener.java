@@ -2,12 +2,8 @@ package com.andavin.images;
 
 import com.andavin.images.image.CustomImage;
 import com.andavin.images.image.CustomImageSection;
-import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
-import com.comphenix.protocol.ProtocolLibrary;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,32 +19,13 @@ public abstract class PacketListener<T, U> implements Versioned {
     static Supplier<List<CustomImage>> getImages;
 
     /**
-     * Create a new entity listener to the given player's
-     * packet listener.
-     *
-     * @param player The player to create the listener for.
-     * @param listener The listener to set to.
-     */
-    public void createEntityListener(Player player, ImageListener listener) {
-
-        Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
-        if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
-            Logger.info("Enabling packet handling through ProtocolLib...");
-            ProtocolLibrary.getProtocolManager().addPacketListener(
-                    new ProtocolLibListener(protocolLib, listener, this));
-        } else {
-            setEntityListener(player, listener);
-        }
-    }
-
-    /**
      * Set a new entity listener to the given player's
      * packet listener.
      *
      * @param player The player to set the listener for.
      * @param listener The listener to set to.
      */
-    protected abstract void setEntityListener(Player player, ImageListener listener);
+    public abstract void setEntityListener(Player player, ImageListener listener);
 
     /**
      * Handle an incoming use entity packet that signifies
