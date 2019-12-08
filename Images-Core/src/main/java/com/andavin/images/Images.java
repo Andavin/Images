@@ -128,7 +128,7 @@ public class Images extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         Location location = player.getLocation();
         Scheduler.laterAsync(() -> this.refreshImages(player, location), 20L);
-        BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
+        BRIDGE.createEntityListener(player, (clicker, image, section, action, hand) -> {
 
             ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
             if (listener != null) {

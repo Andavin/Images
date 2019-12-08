@@ -3,7 +3,9 @@ package com.andavin.images;
 import com.andavin.images.image.CustomImage;
 import com.andavin.images.image.CustomImageSection;
 import com.andavin.util.Scheduler;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -14,9 +16,26 @@ import static com.andavin.images.image.CustomImageSection.DEFAULT_STARTING_ID;
  * @since September 21, 2019
  * @author Andavin
  */
-public abstract class PacketListener implements Versioned {
+public abstract class PacketListener<T, U> implements Versioned {
 
     static Supplier<List<CustomImage>> getImages;
+
+    /**
+     * Create a new entity listener to the given player's
+     * packet listener.
+     *
+     * @param player The player to create the listener for.
+     * @param listener The listener to set to.
+     */
+    public void createEntityListener(Player player, ImageListener listener) {
+
+        Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
+        if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
+            new ProtocolLibListener(protocolLib, listener, this);
+        } else {
+            setEntityListener(player, listener);
+        }
+    }
 
     /**
      * Set a new entity listener to the given player's
@@ -25,7 +44,28 @@ public abstract class PacketListener implements Versioned {
      * @param player The player to set the listener for.
      * @param listener The listener to set to.
      */
-    public abstract void setEntityListener(Player player, ImageListener listener);
+    protected abstract void setEntityListener(Player player, ImageListener listener);
+
+    /**
+     * Handle an incoming use entity packet that signifies
+     * when a player interacts with another entity in any way.
+     *
+     * @param player The player that the packet is coming from.
+     * @param listener The listener to call once the
+     *                 packet is processed.
+     * @param packet The packet to handle.
+     */
+    protected abstract void handle(Player player, ImageListener listener, T packet);
+
+    /**
+     * Handle an incoming creative set slot packet that
+     * signifies when a player "gets" an entity while
+     * in creative mode.
+     *
+     * @param player The player that the packet is coming from.
+     * @param packet The packet to handle.
+     */
+    protected abstract void handle(Player player, U packet);
 
     /**
      * Get the {@link CustomImageSection} that has the

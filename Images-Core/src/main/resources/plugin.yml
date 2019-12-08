@@ -4,5 +4,5 @@ main: com.andavin.images.Images
 authors: [ 'Andavin' ]
 description: ${project.description}
 website: ${project.url}
-softdepend: [ 'Multiverse-Core', 'PlotSquared' ]
+softdepend: [ 'Multiverse-Core', 'PlotSquared', 'ProtocolLib' ]
 api-version: '1.13'

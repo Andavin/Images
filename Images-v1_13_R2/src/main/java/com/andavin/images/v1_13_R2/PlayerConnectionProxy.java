@@ -1,23 +1,12 @@
 package com.andavin.images.v1_13_R2;
 
-import com.andavin.images.PacketListener;
-import com.andavin.images.PacketListener.Hand;
 import com.andavin.images.PacketListener.ImageListener;
-import com.andavin.images.PacketListener.InteractType;
-import com.andavin.images.image.CustomImageSection;
-import com.andavin.util.Logger;
-import com.andavin.util.Scheduler;
-import net.minecraft.server.v1_13_R2.*;
-import net.minecraft.server.v1_13_R2.PacketPlayInUseEntity.EnumEntityUseAction;
+import net.minecraft.server.v1_13_R2.Packet;
+import net.minecraft.server.v1_13_R2.PacketPlayInSetCreativeSlot;
+import net.minecraft.server.v1_13_R2.PacketPlayInUseEntity;
+import net.minecraft.server.v1_13_R2.PlayerConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_13_R2.CraftServer;
-
-import java.lang.reflect.Field;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.andavin.images.v1_13_R2.MapHelper.DEFAULT_STARTING_ID;
-import static com.andavin.reflect.Reflection.findField;
-import static com.andavin.reflect.Reflection.getFieldValue;
 
 /**
  * @since September 21, 2019
@@ -25,12 +14,13 @@ import static com.andavin.reflect.Reflection.getFieldValue;
  */
 class PlayerConnectionProxy extends PlayerConnection {
 
-    private static final Field ENTITY_ID = findField(PacketPlayInUseEntity.class, "a");
     private final ImageListener listener;
+    private final PacketListener packetListener;
 
-    PlayerConnectionProxy(PlayerConnection connection, ImageListener listener) {
+    PlayerConnectionProxy(PlayerConnection connection, ImageListener listener, PacketListener packetListener) {
         super(((CraftServer) Bukkit.getServer()).getServer(), connection.networkManager, connection.player);
         this.listener = listener;
+        this.packetListener = packetListener;
     }
 
     @Override
@@ -40,54 +30,13 @@ class PlayerConnectionProxy extends PlayerConnection {
 
     @Override
     public void a(PacketPlayInUseEntity packet) {
-        PacketListener.call(this.player.getBukkitEntity(), getFieldValue(ENTITY_ID, packet),
-                packet.b() == EnumEntityUseAction.ATTACK ? InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
-                packet.c() == EnumHand.MAIN_HAND ? Hand.MAIN_HAND : Hand.OFF_HAND, this.listener);
+        packetListener.handle(player.getBukkitEntity(), listener, packet);
         super.a(packet);
     }
 
     @Override
     public void a(PacketPlayInSetCreativeSlot packet) {
-
-        ItemStack item = packet.getItemStack();
-        NBTTagCompound tag = item.getTag();
-        if (tag != null) {
-
-            int mapId = tag.getInt("map");
-            if (mapId >= DEFAULT_STARTING_ID) {
-
-                CustomImageSection section = PacketListener.getImageSection(mapId);
-                if (section != null) {
-
-                    AtomicBoolean complete = new AtomicBoolean();
-                    Scheduler.sync(() -> {
-
-                        WorldMap map = ItemWorldMap.getSavedMap(item, player.getWorld()); // Sets a new ID
-                        map.scale = 3;
-                        map.track = false;
-                        map.unlimitedTracking = true;
-                        map.colors = section.getPixels();
-                        complete.set(true);
-                        synchronized (complete) {
-                            complete.notify();
-                        }
-                    });
-
-                    synchronized (complete) {
-
-                        while (!complete.get()) {
-
-                            try {
-                                complete.wait();
-                            } catch (InterruptedException e) {
-                                Logger.severe(e);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
+        packetListener.handle(player.getBukkitEntity(), packet);
         super.a(packet);
     }
 }

@@ -1,18 +1,81 @@
 package com.andavin.images.v1_8_R3;
 
-import net.minecraft.server.v1_8_R3.PlayerConnection;
+import com.andavin.images.image.CustomImageSection;
+import com.andavin.util.Logger;
+import com.andavin.util.Scheduler;
+import net.minecraft.server.v1_8_R3.*;
+import net.minecraft.server.v1_8_R3.PacketPlayInUseEntity.EnumEntityUseAction;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+
+import java.lang.reflect.Field;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.andavin.images.v1_8_R3.MapHelper.DEFAULT_STARTING_ID;
+import static com.andavin.reflect.Reflection.findField;
+import static com.andavin.reflect.Reflection.getFieldValue;
 
 /**
  * @since September 21, 2019
  * @author Andavin
  */
-class PacketListener extends com.andavin.images.PacketListener {
+class PacketListener extends com.andavin.images.PacketListener<PacketPlayInUseEntity, PacketPlayInSetCreativeSlot> {
+
+    private static final Field ENTITY_ID = findField(PacketPlayInUseEntity.class, "a");
 
     @Override
-    public void setEntityListener(Player player, ImageListener listener) {
+    protected void setEntityListener(Player player, ImageListener listener) {
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
-        connection.networkManager.a(new PlayerConnectionProxy(connection, listener));
+        connection.networkManager.a(new PlayerConnectionProxy(connection, listener, this));
+    }
+
+    @Override
+    protected void handle(Player player, ImageListener listener, PacketPlayInUseEntity packet) {
+        call(player, getFieldValue(ENTITY_ID, packet),
+                packet.a() == EnumEntityUseAction.ATTACK ?
+                        InteractType.LEFT_CLICK : InteractType.RIGHT_CLICK,
+                Hand.MAIN_HAND, listener);
+    }
+
+    @Override
+    protected void handle(Player player, PacketPlayInSetCreativeSlot packet) {
+
+        ItemStack item = packet.getItemStack();
+        if (item == null) {
+            return;
+        }
+
+        int mapId = item.getData();
+        if (mapId >= DEFAULT_STARTING_ID) {
+
+            CustomImageSection section = getImageSection(mapId);
+            if (section != null) {
+
+                AtomicBoolean complete = new AtomicBoolean();
+                Scheduler.sync(() -> {
+
+                    WorldMap map = ((ItemWorldMap) item.getItem()).getSavedMap(item,
+                            ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
+                    map.scale = 3;
+                    map.colors = section.getPixels();
+                    complete.set(true);
+                    synchronized (complete) {
+                        complete.notify();
+                    }
+                });
+
+                synchronized (complete) {
+
+                    while (!complete.get()) {
+
+                        try {
+                            complete.wait();
+                        } catch (InterruptedException e) {
+                            Logger.severe(e);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

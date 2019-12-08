@@ -29,6 +29,11 @@
             <artifactId>images-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>4.5.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 </project>
