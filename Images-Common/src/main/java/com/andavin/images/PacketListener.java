@@ -2,6 +2,7 @@ package com.andavin.images;
 
 import com.andavin.images.image.CustomImage;
 import com.andavin.images.image.CustomImageSection;
+import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.comphenix.protocol.ProtocolLibrary;
 import org.bukkit.Bukkit;
@@ -32,6 +33,7 @@ public abstract class PacketListener<T, U> implements Versioned {
 
         Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
         if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
+            Logger.info("Enabling packet handling through ProtocolLib...");
             ProtocolLibrary.getProtocolManager().addPacketListener(
                     new ProtocolLibListener(protocolLib, listener, this));
         } else {
