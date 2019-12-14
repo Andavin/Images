@@ -82,7 +82,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
             case LEFT_CLICK_AIR:
             case LEFT_CLICK_BLOCK:
 
-                if (this.cancel(event.getPlayer())) {
+                if (MinecraftVersion.lessThan(v1_15) && this.cancel(event.getPlayer())) {
                     event.setCancelled(true);
                 }
 
@@ -92,12 +92,15 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
     @EventHandler
     public void onAnimate(PlayerAnimationEvent event) {
-        this.cancel(event.getPlayer());
+
+        if (MinecraftVersion.lessThan(v1_15)) {
+            this.cancel(event.getPlayer());
+        }
     }
 
     private boolean cancel(Player player) {
 
-        if (!MinecraftVersion.is(v1_15) && this.deleting.remove(player.getUniqueId())) {
+        if (this.deleting.remove(player.getUniqueId())) {
             player.sendMessage("§cDeletion cancelled");
             return true;
         }
