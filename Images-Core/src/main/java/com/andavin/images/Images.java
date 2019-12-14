@@ -11,7 +11,6 @@ import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
-import com.comphenix.protocol.ProtocolLibrary;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -70,14 +69,7 @@ public class Images extends JavaPlugin implements Listener {
         if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
             this.protocolLib = true;
             Logger.info("ProtocolLib detected. Enabling generic packet handling...");
-            ProtocolLibrary.getProtocolManager().addPacketListener(
-                    new ProtocolLibListener(this, (clicker, image, section, action, hand) -> {
-
-                        ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
-                        if (listener != null) {
-                            listener.click(clicker, image, section, action, hand);
-                        }
-                    }, BRIDGE));
+            ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
         }
 
         FileConfiguration config = this.getConfig();
