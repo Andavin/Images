@@ -39,6 +39,10 @@ final class DeleteCommand extends BaseCommand implements Listener {
     @Override
     public void execute(Player player, String label, String[] args) {
 
+        if (this.cancel(player)) {
+            return;
+        }
+
         UUID id = player.getUniqueId();
         this.deleting.add(id);
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
