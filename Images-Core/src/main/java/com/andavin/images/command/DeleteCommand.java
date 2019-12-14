@@ -45,9 +45,15 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
         UUID id = player.getUniqueId();
         this.deleting.add(id);
-        Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
-                "§eRight Click to delete§7 - §eLeft Click to cancel"),
-                5L, 20L, () -> this.deleting.contains(id));
+        Scheduler.repeatAsyncWhile(() -> {
+
+            if (MinecraftVersion.lessThan(v1_15)) {
+                ActionBarUtil.sendActionBar(player, "§eRight Click to delete§7 - §eLeft Click to cancel");
+            } else {
+                ActionBarUtil.sendActionBar(player, "§eRight Click to delete§7 - §eRerun Command to cancel");
+            }
+        }, 5L, 20L, () -> this.deleting.contains(id));
+
         Images.addListenerTask(player, (clicker, image, section, action, hand) -> {
 
             if (!image.getCreator().equals(UNKNOWN_CREATOR) &&
