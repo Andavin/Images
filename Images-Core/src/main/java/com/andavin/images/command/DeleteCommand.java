@@ -3,6 +3,7 @@ package com.andavin.images.command;
 import com.andavin.images.Images;
 import com.andavin.images.PacketListener.InteractType;
 import com.andavin.util.ActionBarUtil;
+import com.andavin.util.MinecraftVersion;
 import com.andavin.util.Scheduler;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.andavin.images.image.CustomImage.UNKNOWN_CREATOR;
+import static com.andavin.util.MinecraftVersion.v1_15;
 
 /**
  * Created on February 14, 2018
@@ -91,7 +93,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
     private boolean cancel(Player player) {
 
-        if (this.deleting.remove(player.getUniqueId())) {
+        if (!MinecraftVersion.is(v1_15) && this.deleting.remove(player.getUniqueId())) {
             player.sendMessage("§cDeletion cancelled");
             return true;
         }
