@@ -12,7 +12,7 @@ import org.bukkit.craftbukkit.v1_15_R1.CraftServer;
  * @since September 21, 2019
  * @author Andavin
  */
-class PlayerConnectionProxy extends PlayerConnection {
+public class PlayerConnectionProxy extends PlayerConnection {
 
     private final ImageListener listener;
     private final PacketListener packetListener;

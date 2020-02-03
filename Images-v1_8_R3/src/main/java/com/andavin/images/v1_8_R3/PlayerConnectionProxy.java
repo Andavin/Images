@@ -7,7 +7,7 @@ import net.minecraft.server.v1_8_R3.*;
  * @since September 21, 2019
  * @author Andavin
  */
-class PlayerConnectionProxy extends PlayerConnection {
+public class PlayerConnectionProxy extends PlayerConnection {
 
     private final ImageListener listener;
     private final PacketListener packetListener;
