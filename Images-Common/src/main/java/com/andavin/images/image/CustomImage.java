@@ -246,8 +246,8 @@ public class CustomImage implements Serializable {
                 throw new IllegalStateException("Invalid direction " + this.direction);
         }
 
-        int xSections = image.getWidth() / PIXELS_PER_FRAME;
-        int ySections = image.getHeight() / PIXELS_PER_FRAME;
+        int xSections = Math.max(image.getWidth() / PIXELS_PER_FRAME, 1);
+        int ySections = Math.max(image.getHeight() / PIXELS_PER_FRAME, 1);
         image = resize(image, xSections, ySections);
         for (int x = 0; x < xSections; x++) {
 
