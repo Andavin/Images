@@ -56,8 +56,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Created on February 14, 2018
- *
+ * @since February 14, 2018
  * @author Andavin
  */
 final class CreateCommand extends BaseCommand implements Listener {

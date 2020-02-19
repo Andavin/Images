@@ -27,8 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created on February 06, 2018
- *
+ * @since February 06, 2018
  * @author Andavin
  */
 public enum FontCharacter {

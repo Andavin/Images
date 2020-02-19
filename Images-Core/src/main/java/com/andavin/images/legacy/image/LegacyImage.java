@@ -36,8 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Created on February 08, 2018
- *
+ * @since February 08, 2018
  * @author Andavin
  */
 @SerializableAs("com.andavin.images.image.Image")

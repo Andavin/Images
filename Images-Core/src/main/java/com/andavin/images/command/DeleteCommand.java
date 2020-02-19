@@ -43,8 +43,7 @@ import static com.andavin.images.image.CustomImage.UNKNOWN_CREATOR;
 import static com.andavin.util.MinecraftVersion.v1_15;
 
 /**
- * Created on February 14, 2018
- *
+ * @since February 14, 2018
  * @author Andavin
  */
 final class DeleteCommand extends BaseCommand implements Listener {

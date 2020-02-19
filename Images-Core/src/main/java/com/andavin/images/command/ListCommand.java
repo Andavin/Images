@@ -35,8 +35,7 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Created on February 14, 2018
- *
+ * @since February 14, 2018
  * @author Andavin
  */
 final class ListCommand extends BaseCommand {
