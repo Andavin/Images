@@ -75,16 +75,20 @@ class PacketListener extends com.andavin.images.PacketListener<PacketPlayInUseEn
                     AtomicBoolean complete = new AtomicBoolean();
                     Scheduler.sync(() -> {
 
-                        WorldMap map = ItemWorldMap.getSavedMap(item,
-                                ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
-                        map.locked = true;
-                        map.scale = 3;
-                        map.track = false;
-                        map.unlimitedTracking = true;
-                        map.colors = section.getPixels();
-                        complete.set(true);
-                        synchronized (complete) {
-                            complete.notify();
+                        try {
+                            WorldMap map = ItemWorldMap.getSavedMap(item,
+                                    ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
+                            map.locked = true;
+                            map.scale = 3;
+                            map.track = false;
+                            map.unlimitedTracking = true;
+                            map.colors = section.getPixels();
+                        } finally {
+
+                            complete.set(true);
+                            synchronized (complete) {
+                                complete.notify();
+                            }
                         }
                     });
 

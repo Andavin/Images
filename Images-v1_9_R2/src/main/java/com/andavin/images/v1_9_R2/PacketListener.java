@@ -68,7 +68,7 @@ class PacketListener extends com.andavin.images.PacketListener<PacketPlayInUseEn
         }
 
         int mapId = item.getData();
-        if (mapId >= DEFAULT_STARTING_ID) {
+        if (mapId >= DEFAULT_STARTING_ID && item.getItem() instanceof ItemWorldMap) {
 
             CustomImageSection section = getImageSection(mapId);
             if (section != null) {
@@ -76,14 +76,18 @@ class PacketListener extends com.andavin.images.PacketListener<PacketPlayInUseEn
                 AtomicBoolean complete = new AtomicBoolean();
                 Scheduler.sync(() -> {
 
-                    WorldMap map = ((ItemWorldMap) item.getItem()).getSavedMap(item,
-                            ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
-                    map.scale = 3;
-                    map.track = false;
-                    map.colors = section.getPixels();
-                    complete.set(true);
-                    synchronized (complete) {
-                        complete.notify();
+                    try {
+                        WorldMap map = ((ItemWorldMap) item.getItem()).getSavedMap(item,
+                                ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
+                        map.scale = 3;
+                        map.track = false;
+                        map.colors = section.getPixels();
+                    } finally {
+
+                        complete.set(true);
+                        synchronized (complete) {
+                            complete.notify();
+                        }
                     }
                 });
 
