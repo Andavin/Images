@@ -36,6 +36,32 @@ import static java.util.Collections.emptyList;
  */
 public class Images extends JavaPlugin implements Listener {
 
+    /*
+     * Current Pitfalls:
+     *
+     *  1. The command system is multiple years old and in much
+     *     need of an update. This could easily be improved in many
+     *     ways and if there are any suggestions I'd be open to it.
+     *
+     *  2. The database storage format is simply based on Java I/O Serializable.
+     *     There are inherent flaws to this such as no versioning
+     *     so it is extremely difficult to make any major changes to
+     *     the order of how the data is written.
+     *
+     *     A better way of storing this, but still preferably as a
+     *     byte array format would probably be a nice update.
+     *
+     *  3. Proxy/multi-server setups are not very well supported.
+     *     Each server needs to store it's only images. Therefore, if
+     *     a shared MySQL server is used, for instance, then the images
+     *     will most likely be duplicated across all servers where
+     *     they don't belong.
+     *
+     *     Maybe a BungeeCord plugin or such could help us out here
+     *     or at least a setting to tell us if we are on a proxy and
+     *     then somehow store images by server ID (a problem in itself).
+     */
+
     private static final int PIXELS_PER_FRAME = 128;
     private static final CustomImage[] EMPTY_IMAGES_ARRAY = new CustomImage[0];
     public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
