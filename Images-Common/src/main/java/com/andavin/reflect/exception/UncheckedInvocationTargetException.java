@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+/* Copyright (c) 2019 */
 package com.andavin.reflect.exception;
 
 import java.lang.reflect.InvocationTargetException;

@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+/* Copyright (c) 2019 */
 package com.andavin.images;
 
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;

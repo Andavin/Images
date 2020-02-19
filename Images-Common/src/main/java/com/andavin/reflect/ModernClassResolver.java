@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.reflect;///*
 // * MIT License
 // *
@@ -22,7 +23,7 @@ package com.andavin.reflect;///*
 // * SOFTWARE.
 // */
 //
-//package com.andavin.reflect;
+///* Copyright (c) 2019 */package com.andavin.reflect;
 //
 ///**
 // * @since October 31, 2018

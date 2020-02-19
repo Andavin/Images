@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.util;
 
 import org.apache.commons.lang.StringUtils;

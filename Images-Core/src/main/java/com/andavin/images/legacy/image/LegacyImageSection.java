@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.legacy.image;
 
 import org.bukkit.configuration.serialization.ConfigurationSerializable;

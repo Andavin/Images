@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.command;
 
 import net.md_5.bungee.api.chat.ClickEvent;

@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.v1_10_R1;
 
 import net.minecraft.server.v1_10_R1.*;

@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+/* Copyright (c) 2019 */
 package com.andavin.util;
 
 import java.util.function.Consumer;

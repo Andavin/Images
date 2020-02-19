@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 
+/* Copyright (c) 2019 */
 package com.andavin.reflect;
 
 import com.andavin.reflect.exception.*;

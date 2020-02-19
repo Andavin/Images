@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.legacy.image;
 
 import com.andavin.util.Scheduler;

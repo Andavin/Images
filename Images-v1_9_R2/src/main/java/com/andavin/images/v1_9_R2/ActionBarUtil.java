@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.v1_9_R2;
 
 import net.minecraft.server.v1_9_R2.ChatComponentText;

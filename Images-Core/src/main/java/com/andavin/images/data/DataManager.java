@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.data;
 
 import com.andavin.images.image.CustomImage;

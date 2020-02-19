@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.legacy;
 
 import com.andavin.images.data.DataManager;

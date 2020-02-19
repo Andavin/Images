@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.image;
 
 import com.andavin.images.MapHelper;

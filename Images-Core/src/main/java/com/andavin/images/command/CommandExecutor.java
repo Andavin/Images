@@ -1,3 +1,4 @@
+/* Copyright (c) 2019 */
 package com.andavin.images.command;
 
 import com.andavin.util.Logger;
@@ -9,7 +10,6 @@ import java.util.*;
 
 import static com.andavin.util.StringUtil.centerMessage;
 
-@SuppressWarnings("Duplicates")
 final class CommandExecutor extends org.bukkit.command.Command {
 
     private final BaseCommand command;
