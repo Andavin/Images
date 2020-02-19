@@ -11,7 +11,9 @@ Images is open source! We welcome contributions; the project is licensed using t
 Compiling
 ---------
 
-See [COMPILING.md](COMPILING.md) for a guide on compiling Images.
+1. Ensure that you have the project setup properly with Maven
+2. Compile from the parent project of Images that all modules are contained within
+3. Run `mvn clean package`
 
 Contributing
 ------------
