@@ -45,11 +45,17 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import static com.andavin.util.MinecraftVersion.v1_13;
 import static com.google.common.base.Preconditions.checkArgument;
@@ -61,6 +67,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 final class CreateCommand extends BaseCommand implements Listener {
 
+    private static final Predicate<String> URL_TEST = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]").asPredicate();
     private final Map<UUID, CreateImageTask> creating = new HashMap<>();
 
     CreateCommand() {
@@ -75,7 +82,25 @@ final class CreateCommand extends BaseCommand implements Listener {
     @Override
     public void execute(Player player, String label, String[] args) {
 
-        File imageFile = Images.getImageFile(args[0]);
+        ImageSupplier imageSupplier;
+        Supplier<String> nameSupplier;
+        if (URL_TEST.test(args[0])) {
+
+            AtomicReference<String> fileName = new AtomicReference<>();
+            imageSupplier = () -> {
+                URI uri = new URI(args[0]);
+                Path path = Paths.get(uri);
+                fileName.set(path.getFileName().toString());
+                return ImageIO.read(uri.toURL());
+            };
+
+            nameSupplier = fileName::get;
+        } else {
+            File imageFile = Images.getImageFile(args[0]);
+            imageSupplier = () -> ImageIO.read(imageFile);
+            nameSupplier = imageFile::getName;
+        }
+
         double scale;
         if (args.length > 1) {
 
@@ -95,7 +120,7 @@ final class CreateCommand extends BaseCommand implements Listener {
         }
 
         UUID id = player.getUniqueId();
-        this.creating.put(id, new CreateImageTask(imageFile, scale));
+        this.creating.put(id, new CreateImageTask(scale, imageSupplier, nameSupplier));
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
                 "§eRight Click to place§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.creating.containsKey(id));
@@ -191,7 +216,7 @@ final class CreateCommand extends BaseCommand implements Listener {
                     }
 
                     CustomImage customImage = new CustomImage(player.getUniqueId(),
-                            task.imageFile.getName(), location, direction, image);
+                            task.nameSupplier.get(), location, direction, image);
                     customImage.refresh(player, playerLocation);
                     if (Images.addImage(customImage)) {
                         player.sendMessage("§aSuccessfully created image§f " + customImage.getImageName());
@@ -221,13 +246,15 @@ final class CreateCommand extends BaseCommand implements Listener {
     private static class CreateImageTask {
 
         private final double scale;
-        private final File imageFile;
+        private final ImageSupplier imageSupplier;
+        private final Supplier<String> nameSupplier;
 
-        CreateImageTask(File imageFile, double scale) {
+        CreateImageTask(double scale, ImageSupplier supplier, Supplier<String> nameSupplier) {
             checkArgument(scale > 0,
                     "§cScale must be greater than zero§f %s", scale);
             this.scale = scale;
-            this.imageFile = checkNotNull(imageFile);
+            this.nameSupplier = nameSupplier;
+            this.imageSupplier = checkNotNull(supplier);
         }
 
         /**
@@ -241,7 +268,7 @@ final class CreateCommand extends BaseCommand implements Listener {
 
             try {
 
-                BufferedImage image = ImageIO.read(imageFile);
+                BufferedImage image = imageSupplier.get();
                 if (this.scale == 1) {
                     return image;
                 }
@@ -260,9 +287,14 @@ final class CreateCommand extends BaseCommand implements Listener {
                 graphics.dispose();
                 return other;
 
-            } catch (IOException e) {
+            } catch (Exception e) {
                 return null;
             }
         }
+    }
+
+    private interface ImageSupplier {
+
+        BufferedImage get() throws Exception;
     }
 }
