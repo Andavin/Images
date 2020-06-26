@@ -120,7 +120,14 @@ public enum MinecraftVersion {
      * This is only the major version of the game while minor
      * versions can be retrieved via the {@link MinorVersion#CURRENT}.
      */
-    v1_15;
+    v1_15,
+
+    /**
+     * The representation of the Minecraft version {@code 1.16}.
+     * This is only the major version of the game while minor
+     * versions can be retrieved via the {@link MinorVersion#CURRENT}.
+     */
+    v1_16;
 
     /**
      * The current {@link MinecraftVersion} of this server.
