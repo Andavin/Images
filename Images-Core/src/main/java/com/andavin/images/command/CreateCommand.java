@@ -25,10 +25,7 @@ package com.andavin.images.command;
 
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
-import com.andavin.util.ActionBarUtil;
-import com.andavin.util.LocationUtil;
-import com.andavin.util.MinecraftVersion;
-import com.andavin.util.Scheduler;
+import com.andavin.util.*;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -46,8 +43,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,19 +79,21 @@ final class CreateCommand extends BaseCommand implements Listener {
 
         ImageSupplier imageSupplier;
         Supplier<String> nameSupplier;
-        if (URL_TEST.test(args[0])) {
+        String imageNameArg = args[0];
+        if (URL_TEST.test(imageNameArg)) {
 
             AtomicReference<String> fileName = new AtomicReference<>();
             imageSupplier = () -> {
-                URI uri = new URI(args[0]);
-                Path path = Paths.get(uri);
-                fileName.set(path.getFileName().toString());
+                URI uri = new URI(imageNameArg);
+                int slash = imageNameArg.lastIndexOf('/');
+                fileName.set(slash == -1 ? imageNameArg :
+                        imageNameArg.substring(slash + 1));
                 return ImageIO.read(uri.toURL());
             };
 
             nameSupplier = fileName::get;
         } else {
-            File imageFile = Images.getImageFile(args[0]);
+            File imageFile = Images.getImageFile(imageNameArg);
             imageSupplier = () -> ImageIO.read(imageFile);
             nameSupplier = imageFile::getName;
         }
@@ -288,6 +285,7 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return other;
 
             } catch (Exception e) {
+                Logger.debug(e);
                 return null;
             }
         }
