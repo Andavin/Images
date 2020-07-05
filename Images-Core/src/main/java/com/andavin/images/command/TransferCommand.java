@@ -112,7 +112,8 @@ public final class TransferCommand extends BaseCommand {
                 Logger.severe(e);
             }
             // No matter what shutdown
-            Bukkit.shutdown();
+            player.sendMessage("§eShutting down in 5 seconds...");
+            Scheduler.laterAsync(Bukkit::shutdown, 100);
         });
     }
 
