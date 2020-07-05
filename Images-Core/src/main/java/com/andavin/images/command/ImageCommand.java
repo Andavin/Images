@@ -41,11 +41,12 @@ public class ImageCommand extends BaseCommand {
         super("image", "images.command.manage");
         this.setAliases("customimage", "images", "img");
         this.setDesc("Manage custom images.");
-        this.setUsage("/image [create|delete|list|import]");
+        this.setUsage("/image [create|delete|list|import|transfer]");
         this.addChild(new CreateCommand());
         this.addChild(new DeleteCommand());
         this.addChild(new ListCommand());
         this.addChild(new ImportCommand());
+        this.addChild(new TransferCommand());
 //        this.addChild(new SizeCommand());
 //        this.addChild(new ResizeCommand());
     }
