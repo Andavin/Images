@@ -40,9 +40,8 @@ public final class TransferCommand extends BaseCommand {
 
         if (TimeoutMetadata.isExpired(player, KEY)) {
             player.setMetadata(KEY, new TimeoutMetadata(20, TimeUnit.SECONDS));
-            player.sendMessage("§cRunning this command may overwrite any data\n" +
-                    "§cin the destination database\n" +
-                    "§cThis will also stop the server");
+            player.sendMessage("§cThis may overwrite any data in the " + args[0] + " database\n" +
+                    "§c§lThis will also stop the server");
             player.sendMessage("§eRerun the command to confirm");
             return;
         }
