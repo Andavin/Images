@@ -310,6 +310,31 @@ public class CustomImage implements Serializable {
         }
     }
 
+    /**
+     * Tell if this image or any of its sections
+     * are within the specified range of a {@link Location}.
+     *
+     * @param location The location to test within range of.
+     * @param range The range to test with.
+     * @return If the location is in range of this image.
+     */
+    public boolean isInRange(Location location, int range) {
+
+        int rangeSqrd = range * range;
+        if (this.location.distanceSquared(location) <= rangeSqrd) {
+            return true;
+        }
+
+        for (CustomImageSection section : this.sections.values()) {
+
+            if (section.getLocation().distanceSquared(location) <= rangeSqrd) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
 

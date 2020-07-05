@@ -47,11 +47,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static com.andavin.reflect.Reflection.setFieldValue;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @since September 20, 2019
@@ -414,6 +416,20 @@ public class Images extends JavaPlugin implements Listener {
         synchronized (IMAGES) {
             dataManager.delete(image);
             return IMAGES.remove(image);
+        }
+    }
+
+    /**
+     * Get all of the {@link CustomImage CustomImages}
+     * that match the given criteria.
+     *
+     * @param test The criteria to test the images with.
+     * @return The images matching the criteria.
+     */
+    public static List<CustomImage> getMatchingImages(Predicate<CustomImage> test) {
+
+        synchronized (IMAGES) {
+            return IMAGES.stream().filter(test).collect(toList());
         }
     }
 
