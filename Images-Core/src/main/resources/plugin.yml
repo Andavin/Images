@@ -7,7 +7,7 @@ website: ${project.url}
 softdepend: [ 'Multiverse-Core', 'PlotSquared', 'ProtocolLib' ]
 api-version: '1.13'
 commands:
-  images:
+  image:
     description: 'Manage custom images.'
     usage: '/<command> [create|delete|list|import]'
     aliases: [ 'customimage', 'images', 'img' ]
