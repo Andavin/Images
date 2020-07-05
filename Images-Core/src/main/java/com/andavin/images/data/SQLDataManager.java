@@ -85,7 +85,7 @@ abstract class SQLDataManager implements DataManager {
         try (Connection connection = this.getConnection()) {
             save(connection, image);
         } catch (SQLException e) {
-            Logger.severe(e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -102,7 +102,7 @@ abstract class SQLDataManager implements DataManager {
                 save(connection, image);
             }
         } catch (SQLException e) {
-            Logger.severe(e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -9,6 +9,7 @@ import com.andavin.images.image.CustomImage;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -37,7 +38,9 @@ public final class TransferCommand extends BaseCommand {
 
         if (TimeoutMetadata.isExpired(player, KEY)) {
             player.setMetadata(KEY, new TimeoutMetadata(20, TimeUnit.SECONDS));
-            player.sendMessage("§cRunning this command may delete any data in the destination database.");
+            player.sendMessage("§cRunning this command may overwrite any data\n" +
+                    "§cin the destination database\n" +
+                    "§cThis will also stop the server");
             player.sendMessage("§eRerun the command to confirm");
             return;
         }
@@ -92,18 +95,23 @@ public final class TransferCommand extends BaseCommand {
             player.sendMessage("§aInitializing new database...");
             to.initialize();
             List<CustomImage> images = Images.getMatchingImages(i -> true);
+            images.forEach(image -> image.setId(-1)); // Reset the ID of the image so it can be reset
             player.sendMessage("§aSaving §f" + images.size() + "§a to new database...");
             try {
                 to.saveAll(images);
                 player.sendMessage("§aSuccessfully transferred all images!");
                 player.sendMessage("§eYou may now change the database configuration\n" +
                         "§eto the new database and restart your server");
+                Logger.info("Successfully transferred all images to {}", type);
+                Logger.info("You may now change the database configuration to {}", type);
             } catch (Exception e) {
                 player.sendMessage("§cAn error occurred while transferring!");
                 player.sendMessage("§eIf you are using MySQL ensure that it is configured properly.");
                 player.sendMessage("§eOtherwise, contact the developer");
                 Logger.severe(e);
             }
+            // No matter what shutdown
+            Bukkit.shutdown();
         });
     }
 }
