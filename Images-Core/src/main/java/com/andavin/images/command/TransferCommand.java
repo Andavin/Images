@@ -10,6 +10,7 @@ import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
 import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
@@ -25,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 public final class TransferCommand extends BaseCommand {
 
     private static final String KEY = "transfer.check";
+    private static final String[] OPTIONS = { "MySQL", "SQLite", "File" };
 
     public TransferCommand() {
         super("transfer", "images.command.transfer");
@@ -113,5 +115,17 @@ public final class TransferCommand extends BaseCommand {
             // No matter what shutdown
             Bukkit.shutdown();
         });
+    }
+
+    @Override
+    public void tabComplete(CommandSender sender, String[] args, List<String> completions) {
+
+        String arg = args[0];
+        for (String option : OPTIONS) {
+
+            if (option.regionMatches(true, 0, arg, 0, arg.length())) {
+                completions.add(option);
+            }
+        }
     }
 }
