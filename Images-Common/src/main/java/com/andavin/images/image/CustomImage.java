@@ -320,6 +320,10 @@ public class CustomImage implements Serializable {
      */
     public boolean isInRange(Location location, int range) {
 
+        if (!this.location.getWorld().equals(location.getWorld())) {
+            return false;
+        }
+
         int rangeSqrd = range * range;
         if (this.location.distanceSquared(location) <= rangeSqrd) {
             return true;
