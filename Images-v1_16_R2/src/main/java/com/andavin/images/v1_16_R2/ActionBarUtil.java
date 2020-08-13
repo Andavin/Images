@@ -21,12 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.andavin.images.v1_16_R1;
+package com.andavin.images.v1_16_R2;
 
-import net.minecraft.server.v1_16_R1.ChatComponentText;
-import net.minecraft.server.v1_16_R1.ChatMessageType;
-import net.minecraft.server.v1_16_R1.PacketPlayOutChat;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import net.minecraft.server.v1_16_R2.ChatComponentText;
+import net.minecraft.server.v1_16_R2.ChatMessageType;
+import net.minecraft.server.v1_16_R2.PacketPlayOutChat;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;

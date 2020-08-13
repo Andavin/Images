@@ -21,15 +21,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.andavin.images.v1_16_R1;
+package com.andavin.images.v1_16_R2;
 
 import com.andavin.images.PacketListener.ImageListener;
-import net.minecraft.server.v1_16_R1.Packet;
-import net.minecraft.server.v1_16_R1.PacketPlayInSetCreativeSlot;
-import net.minecraft.server.v1_16_R1.PacketPlayInUseEntity;
-import net.minecraft.server.v1_16_R1.PlayerConnection;
+import net.minecraft.server.v1_16_R2.Packet;
+import net.minecraft.server.v1_16_R2.PacketPlayInSetCreativeSlot;
+import net.minecraft.server.v1_16_R2.PacketPlayInUseEntity;
+import net.minecraft.server.v1_16_R2.PlayerConnection;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R1.CraftServer;
+import org.bukkit.craftbukkit.v1_16_R2.CraftServer;
 
 /**
  * @since September 21, 2019

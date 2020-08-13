@@ -21,14 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package com.andavin.images.v1_16_R1;
+package com.andavin.images.v1_16_R2;
 
 import com.andavin.images.image.CustomImageSection;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
-import net.minecraft.server.v1_16_R1.*;
-import net.minecraft.server.v1_16_R1.PacketPlayInUseEntity.EnumEntityUseAction;
-import org.bukkit.craftbukkit.v1_16_R1.entity.CraftPlayer;
+import net.minecraft.server.v1_16_R2.*;
+import net.minecraft.server.v1_16_R2.PacketPlayInUseEntity.EnumEntityUseAction;
+import org.bukkit.craftbukkit.v1_16_R2.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
