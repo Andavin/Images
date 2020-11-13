@@ -79,6 +79,7 @@ class MapHelper extends com.andavin.images.MapHelper {
                 new BlockPosition(location.getX(), location.getY(), location.getZ()),
                 CraftBlock.blockFaceToNotch(direction));
         frame.setItem(item, false, false);
+        frame.setInvisible(invisible);
         setFieldValue(ENTITY_ID, frame, frameId);
         if (rotation != 0) {
             frame.getDataWatcher().set(ROTATION, rotation);

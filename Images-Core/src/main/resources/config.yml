@@ -4,6 +4,13 @@
 # +---------------------------------------------------------+ #
 ###############################################################
 
+# Item frames and maps will appear invisible behind
+# the image giving the effect that the pixels are
+# floating without anything behind them while also
+# not rendering blank space on an image.
+# NOTE: only supported in 1.16+
+invisible-frames: true
+
 database:
   # The type of database that can be used
   # Options: MYSQL, SQLITE, FILE - Default: SQLITE

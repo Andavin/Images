@@ -37,6 +37,7 @@ import java.awt.image.BufferedImage;
  */
 public abstract class MapHelper implements Versioned {
 
+    protected static boolean invisible = true;
     private static final MapHelper BRIDGE = Versioned.getInstance(MapHelper.class);
 
     /**

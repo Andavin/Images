@@ -87,10 +87,7 @@ public class Images extends JavaPlugin implements Listener {
      *     then somehow store images by server ID (a problem in itself).
      */
 
-    private static final int PIXELS_PER_FRAME = 128;
     private static final CustomImage[] EMPTY_IMAGES_ARRAY = new CustomImage[0];
-    public static final String[] EXTENSIONS = { ".png", ".jpeg", ".jpg", /*".gif"*/ };
-
     private boolean protocolLib;
     private static Images instance;
     private static File imagesDirectory;
@@ -124,6 +121,7 @@ public class Images extends JavaPlugin implements Listener {
         }
 
         FileConfiguration config = this.getConfig();
+        MapHelper.invisible = config.getBoolean("invisible-frames");
         String type = config.getString("database.type").toUpperCase(Locale.ENGLISH);
         switch (type) {
             case "MYSQL":
@@ -302,16 +300,11 @@ public class Images extends JavaPlugin implements Listener {
         List<File> images = new ArrayList<>(files.length);
         for (File file : files) {
 
-            if (file.isDirectory()) {
-                continue;
-            }
+            if (!file.isDirectory()) {
 
-            String path = file.getPath();
-            for (String extension : EXTENSIONS) {
-
-                if (path.endsWith(extension)) {
+                String path = file.getPath();
+                if (!path.endsWith(".yml") && !path.endsWith(".db")) {
                     images.add(file);
-                    break;
                 }
             }
         }
