@@ -121,7 +121,7 @@ public class Images extends JavaPlugin implements Listener {
         }
 
         FileConfiguration config = this.getConfig();
-        MapHelper.invisible = config.getBoolean("invisible-frames");
+        MapHelper.invisible = config.getBoolean("invisible-frames", true);
         String type = config.getString("database.type").toUpperCase(Locale.ENGLISH);
         switch (type) {
             case "MYSQL":
