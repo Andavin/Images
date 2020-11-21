@@ -69,8 +69,7 @@ class MapHelper extends com.andavin.images.MapHelper {
     }
 
     @Override
-    protected void createMap(int frameId, int mapId, Player player, Location location,
-                             BlockFace direction, int rotation, byte[] pixels) {
+    protected void createMap(int frameId, int mapId, Player player, Location location, BlockFace direction, int rotation, byte[] pixels) {
 
         ItemStack item = new ItemStack(Items.FILLED_MAP);
         item.setData(mapId);
@@ -80,9 +79,6 @@ class MapHelper extends com.andavin.images.MapHelper {
         frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
         frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
-        if (rotation != 0) {
-            frame.getDataWatcher().watch(9, rotation);
-        }
 
         PacketPlayOutSpawnEntity spawnPacket = new PacketPlayOutSpawnEntity(frame, 71, frame.direction.b());
         BlockPosition position = frame.getBlockPosition();

@@ -188,19 +188,6 @@ final class CreateCommand extends BaseCommand implements Listener {
                             player.sendMessage("§cUnsupported direction!");
                             return;
                     }
-                } else {
-
-                    switch (direction) {
-                        case UP:
-                        case DOWN:
-
-                            if (LocationUtil.getCardinalDirection(playerLocation) != BlockFace.NORTH) {
-//                                player.sendMessage("§cFace north to place an image facing up or down");
-//                                return;
-                            }
-
-                            break;
-                    }
                 }
 
                 Scheduler.async(() -> {
