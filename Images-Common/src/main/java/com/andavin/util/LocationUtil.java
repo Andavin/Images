@@ -25,6 +25,7 @@ package com.andavin.util;
 
 import org.bukkit.Location;
 import org.bukkit.block.BlockFace;
+import org.bukkit.util.NumberConversions;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -125,6 +126,20 @@ public final class LocationUtil {
      */
     public static boolean isChunkLoaded(Location loc) {
         return loc.getWorld().isChunkLoaded(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+    }
+
+    /**
+     * Get the distance squared between two {@link Location Locations}
+     * excluding the {@link Location#getY() Y coordinate} and
+     * therefore two dimensional.
+     *
+     * @param loc1 The first location.
+     * @param loc2 The second location.
+     * @return The distance between the two locations on the X and Z axes.
+     */
+    public static double distanceSquared2D(Location loc1, Location loc2) {
+        return NumberConversions.square(loc1.getX() - loc2.getX()) +
+                NumberConversions.square(loc1.getZ() - loc2.getZ());
     }
 
     /**
@@ -231,6 +246,7 @@ public final class LocationUtil {
         }
 
         BlockFace[] directions = diagonal ? DIAGONAL : CARDINAL;
+        //noinspection IntegerDivisionInFloatingPointContext
         return directions[Math.round(loc.getYaw() / (360 / directions.length)) & directions.length - 1];
     }
 
@@ -258,6 +274,21 @@ public final class LocationUtil {
         }
 
         return degrees;
+    }
+
+    /**
+     * Rotate the given {@link BlockFace} by the given degrees to the
+     * closest 16th of a circle on the y-axis.
+     * <p>
+     * If the degrees are positive, the face will be rotated clockwise
+     * and if they are negative it will be rotated counterclockwise.
+     *
+     * @param face The BlockFace to rotate.
+     * @param degrees The amount of degrees to rotate.
+     * @return The block face that is rotated.
+     */
+    public static BlockFace rotate(BlockFace face, float degrees) {
+        return rotate(face, degrees, false, false);
     }
 
     /**
@@ -357,27 +388,7 @@ public final class LocationUtil {
      * @return The BlockFace that has been rotated 22.5º on the y-axis.
      */
     public static BlockFace rotateRight(BlockFace face, int amount) {
-
-        amount %= 16; // Anything over 16 is over a full rotation
-        if (amount == 0 || face == BlockFace.SELF || face == BlockFace.UP || face == BlockFace.DOWN) { // No rotation
-            return face;
-        }
-
-        if (amount == 1) { // Single rotation
-            return rotateRight(face);
-        }
-
-        if (amount == 8) { // Faster than iterating
-            return face.getOppositeFace();
-        }
-
-        checkArgument(amount > 1, "cannot have negative rotation: " + amount);
-        BlockFace rotated = face;
-        for (int i = 0; i < amount; i++) {
-            rotated = RIGHT_ROTATION[rotated.ordinal()];
-        }
-
-        return rotated;
+        return rotate(RIGHT_ROTATION, face, amount);
     }
 
     /**
@@ -405,6 +416,10 @@ public final class LocationUtil {
      * @return The BlockFace that has been rotated 22.5º on the y-axis.
      */
     public static BlockFace rotateLeft(BlockFace face, int amount) {
+        return rotate(LEFT_ROTATION, face, amount);
+    }
+
+    private static BlockFace rotate(BlockFace[] rotations, BlockFace face, int amount) {
 
         amount %= 16; // Anything over 16 is over a full rotation
         if (amount == 0 || face == BlockFace.SELF || face == BlockFace.UP || face == BlockFace.DOWN) { // No rotation
@@ -412,17 +427,17 @@ public final class LocationUtil {
         }
 
         if (amount == 1) { // Single rotation
-            return rotateLeft(face);
+            return rotations[face.ordinal()];
         }
 
         if (amount == 8) { // Faster than iterating
             return face.getOppositeFace();
         }
 
-        checkArgument(amount > 1, "cannot have negative rotation: " + amount);
+        checkArgument(amount > 1, "cannot have negative rotation: %s", amount);
         BlockFace rotated = face;
         for (int i = 0; i < amount; i++) {
-            rotated = LEFT_ROTATION[rotated.ordinal()];
+            rotated = rotations[rotated.ordinal()];
         }
 
         return rotated;

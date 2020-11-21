@@ -42,8 +42,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.andavin.reflect.Reflection.findField;
-import static com.andavin.reflect.Reflection.setFieldValue;
+import static com.andavin.reflect.Reflection.*;
 import static java.util.Collections.emptyList;
 
 /**
@@ -54,6 +53,8 @@ class MapHelper extends com.andavin.images.MapHelper {
 
     static final int DEFAULT_STARTING_ID = 8000;
     private static final Field ENTITY_ID = findField(Entity.class, "id");
+    private static final DataWatcherObject<Integer> ROTATION =
+            getFieldValue(EntityItemFrame.class, null, "d");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
 
     @Override
@@ -79,6 +80,9 @@ class MapHelper extends com.andavin.images.MapHelper {
         frame.setLocation(location.getX(), location.getY(), location.getZ(), 0, 0);
         frame.setDirection(CraftBlock.blockFaceToNotch(direction));
         setFieldValue(ENTITY_ID, frame, frameId);
+        if (rotation != 0) {
+            frame.getDataWatcher().set(ROTATION, rotation);
+        }
 
         PlayerConnection connection = ((CraftPlayer) player).getHandle().playerConnection;
         connection.sendPacket(new PacketPlayOutSpawnEntity(frame, 71,

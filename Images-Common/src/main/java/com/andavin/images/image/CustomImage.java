@@ -24,6 +24,7 @@
 package com.andavin.images.image;
 
 import com.andavin.images.MapHelper;
+import com.andavin.util.LocationUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -238,35 +239,29 @@ public class CustomImage implements Serializable {
      *
      * @param image The image to update to.
      */
-    public void update(BufferedImage image) {
+    private void update(BufferedImage image) {
 
-        Set<Player> players = this.destroy();
-        BlockFace face;
         int rotation;
-        switch (this.direction) {
+        BlockFace face;
+        Set<Player> players = this.destroy();
+        switch (direction) {
             case UP:
+                face = LocationUtil.getCardinalDirection(location).getOppositeFace();
+                rotation = (int) (LocationUtil.getDifference(BlockFace.SOUTH, face) / 90);
+                break;
             case DOWN:
-                face = this.direction;
-                rotation = 0;
+                face = LocationUtil.getCardinalDirection(location).getOppositeFace();
+                rotation = (int) (LocationUtil.getDifference(face, BlockFace.SOUTH) / 90);
                 break;
             case NORTH:
-                face = BlockFace.SOUTH;
-                rotation = 0;
-                break;
             case SOUTH:
-                face = BlockFace.NORTH;
-                rotation = 0;
-                break;
             case EAST:
-                face = BlockFace.WEST;
-                rotation = 0;
-                break;
             case WEST:
-                face = BlockFace.EAST;
+                face = BlockFace.SELF;
                 rotation = 0;
                 break;
             default:
-                throw new IllegalStateException("Invalid direction " + this.direction);
+                throw new IllegalStateException("Invalid direction " + direction);
         }
 
         int xSections = Math.max(image.getWidth() / PIXELS_PER_FRAME, 1);
@@ -277,28 +272,58 @@ public class CustomImage implements Serializable {
             for (int y = 0; y < ySections; y++) {
 
                 Location loc = location.clone();
-                switch (face) {
+                switch (direction) {
                     case UP:
-                        loc.add(x, 0, y);
+
+                        switch (face) {
+                            case NORTH:
+                                loc.add(-x, 0, -y);
+                                break;
+                            case SOUTH:
+                                loc.add(x, 0, y);
+                                break;
+                            case EAST:
+                                loc.add(y, 0, -x);
+                                break;
+                            case WEST:
+                                loc.add(-y, 0, x);
+                                break;
+                        }
+
                         break;
                     case DOWN:
-                        loc.add(x, 0, -y);
-                        break;
-                    case SOUTH:
-                        loc.add(-x, -y, 0);
+
+                        switch (face) {
+                            case NORTH:
+                                loc.add(-x, 0, y);
+                                break;
+                            case SOUTH:
+                                loc.add(x, 0, -y);
+                                break;
+                            case EAST:
+                                loc.add(-y, 0, -x);
+                                break;
+                            case WEST:
+                                loc.add(y, 0, x);
+                                break;
+                        }
+
                         break;
                     case NORTH:
+                        loc.add(-x, -y, 0);
+                        break;
+                    case SOUTH:
                         loc.add(x, -y, 0);
                         break;
-                    case WEST:
+                    case EAST:
                         loc.add(0, -y, -x);
                         break;
-                    case EAST:
+                    case WEST:
                         loc.add(0, -y, x);
                         break;
                 }
 
-                CustomImageSection section = new CustomImageSection(loc, this.direction,
+                CustomImageSection section = new CustomImageSection(loc, direction,
                         rotation, image.getSubimage(x * PIXELS_PER_FRAME, y * PIXELS_PER_FRAME,
                         PIXELS_PER_FRAME, PIXELS_PER_FRAME));
                 this.sections.put(section.getFrameId(), section);

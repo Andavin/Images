@@ -37,7 +37,7 @@ import static com.andavin.reflect.Reflection.findClass;
  */
 public class MySQLDataManager extends SQLDataManager {
 
-    private static final String FORMAT = "jdbc:mysql://%s:%d/%s";
+    private static final String FORMAT = "jdbc:mysql://%s:%d/%s?useSSL=false";
 
     public MySQLDataManager(String host, int port, String schema, String user, String password) {
         super(String.format(FORMAT, host, port, schema), user, password);
