@@ -108,7 +108,7 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return;
             }
 
-            if (scale < 0.1) {
+            if (scale < 0.01) {
                 player.sendMessage("§cScale must be more than 1%, but got §f" + scale * 100 + '%');
                 return;
             }
