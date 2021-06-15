@@ -38,22 +38,10 @@ import static com.andavin.reflect.Reflection.invokeMethod;
 public class LegacyClassResolver implements ClassResolver {
 
     private static final int DEPTH_ADDITION = 3;
-    private final boolean hasSunReflection;
     private final Method stackTraceMethod;
 
     LegacyClassResolver() {
-        hasSunReflection = hasSunReflection();
         stackTraceMethod = getStackTraceMethod();
-    }
-
-    private static boolean hasSunReflection() {
-        try {
-            //noinspection deprecation
-            Class<?> clazz = sun.reflect.Reflection.getCallerClass(1);
-            return LegacyClassResolver.class.equals(clazz);
-        } catch (Throwable throwable) {
-            return false;
-        }
     }
 
     private static Method getStackTraceMethod() {
@@ -69,15 +57,6 @@ public class LegacyClassResolver implements ClassResolver {
 
     @Override
     public String resolve(int depth) {
-
-        if (hasSunReflection) {
-            try {
-                //noinspection deprecation
-                return sun.reflect.Reflection.getCallerClass(depth + DEPTH_ADDITION).getName();
-            } catch (Exception e) {
-                Logger.severe(e, "Failed to get caller class from sun.reflect.Reflection");
-            }
-        }
 
         Throwable throwable = new Throwable();
         if (stackTraceMethod != null) {
