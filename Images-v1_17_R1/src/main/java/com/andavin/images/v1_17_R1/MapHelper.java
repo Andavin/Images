@@ -64,13 +64,14 @@ import static java.util.Collections.emptyList;
 class MapHelper extends com.andavin.images.MapHelper {
 
     static final int DEFAULT_STARTING_ID = 8000;
-    private static final Field ENTITY_ID = findField(Entity.class, "id");
+    private static final Field ENTITY_ID = findField(Entity.class, "as");
     private static final EntityDataAccessor<Integer> ROTATION =
-            getFieldValue(ItemFrame.class, null, "g");
+            getFieldValue(ItemFrame.class, null, "ap");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
 
     @Override
     protected MapView getWorldMap(int id) {
+        //noinspection deprecation
         return Bukkit.getMap(id);
     }
 
@@ -123,6 +124,7 @@ class MapHelper extends com.andavin.images.MapHelper {
 
         byte[] colors = new byte[pixelCount];
         for (int i = 0; i < pixelCount; i++) {
+            //noinspection deprecation
             colors[i] = MapPalette.matchColor(new Color(pixels[i], true));
         }
 
