@@ -26,7 +26,7 @@ package com.andavin.images.v1_17_R1;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
-import net.minecraft.network.protocol.game.ClientboundRemoveEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -108,11 +108,7 @@ class MapHelper extends com.andavin.images.MapHelper {
 
     @Override
     protected void destroyMap(Player player, int[] frameIds) {
-
-        ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
-        for (int frameId : frameIds) {
-            connection.send(new ClientboundRemoveEntityPacket(frameId));
-        }
+        ((CraftPlayer) player).getHandle().connection.send(new ClientboundRemoveEntitiesPacket(frameIds));
     }
 
     @Override
