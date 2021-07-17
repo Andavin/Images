@@ -75,13 +75,18 @@ class PacketListener extends com.andavin.images.PacketListener<PacketPlayInUseEn
                     Scheduler.sync(() -> {
 
                         try {
+
                             WorldMap map = ItemWorldMap.getSavedMap(item,
                                     ((CraftPlayer) player).getHandle().getWorld()); // Sets a new ID
-                            map.locked = true;
-                            map.scale = 3;
-                            map.track = false;
-                            map.unlimitedTracking = true;
-                            map.colors = section.getPixels();
+                            if (map != null) {
+                                map.locked = true;
+                                map.scale = 3;
+                                map.track = false;
+                                map.unlimitedTracking = true;
+                                map.colors = section.getPixels();
+                            } else {
+                                player.sendMessage("§cCannot create map. Unknown map data...");
+                            }
                         } finally {
 
                             complete.set(true);

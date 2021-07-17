@@ -100,7 +100,7 @@ class MapHelper extends com.andavin.images.MapHelper {
 
         ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
         connection.send(new ClientboundAddEntityPacket(frame, EntityType.ITEM_FRAME,
-                frame.getDirection().get3DDataValue(), frame.getOnPos()));
+                frame.getDirection().get3DDataValue(), frame.getPos()));
         connection.send(new ClientboundSetEntityDataPacket(frame.getId(), frame.getEntityData(), true));
         connection.send(new ClientboundMapItemDataPacket(mapId, (byte) 3, false,
                 emptyList(), new MapPatch(0, 0, 128, 128, pixels)));
