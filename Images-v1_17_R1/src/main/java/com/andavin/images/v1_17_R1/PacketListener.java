@@ -30,6 +30,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket.Handler;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
@@ -100,8 +101,15 @@ class PacketListener extends com.andavin.images.PacketListener<ServerboundIntera
 
                         try {
 
-                            MapItemSavedData map = MapItem.getSavedData(item,
-                                    ((CraftPlayer) player).getHandle().getLevel()); // Sets a new ID
+                            ServerLevel world = ((CraftPlayer) player).getHandle().getLevel();
+                            MapItemSavedData map = MapItem.getSavedData(mapId, world);
+                            if (map == null) {
+                                ItemStack newItem = MapItem.create(world, 0, 0, (byte) 3, false, false);
+                                int newMapId = newItem.getOrCreateTag().getInt("map");
+                                tag.putInt("map", newMapId); // Transfer the ID
+                                map = MapItem.getSavedData(newMapId, world);
+                            }
+
                             if (map != null) {
                                 map.locked = true;
                                 map.scale = 3;
