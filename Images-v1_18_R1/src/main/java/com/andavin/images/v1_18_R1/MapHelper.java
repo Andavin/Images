@@ -23,6 +23,7 @@
  */
 package com.andavin.images.v1_18_R1;
 
+import com.andavin.reflect.FieldMatcher;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundMapItemDataPacket;
@@ -30,7 +31,6 @@ import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
@@ -48,13 +48,14 @@ import org.bukkit.map.MapView;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.andavin.reflect.Reflection.*;
+import static com.andavin.reflect.Reflection.findField;
+import static com.andavin.reflect.Reflection.getFieldValue;
 import static java.util.Collections.emptyList;
 
 /**
@@ -64,10 +65,12 @@ import static java.util.Collections.emptyList;
 class MapHelper extends com.andavin.images.MapHelper {
 
     static final int DEFAULT_STARTING_ID = 8000;
-    private static final Field ENTITY_ID = findField(Entity.class, "as");
-    private static final EntityDataAccessor<Integer> ROTATION =
-            getFieldValue(ItemFrame.class, null, "ap");
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
+    private static final EntityDataAccessor<Integer> ROTATION = getFieldValue(
+            findField(ItemFrame.class, 1, new FieldMatcher(EntityDataAccessor.class)
+                    .require(Modifier.STATIC, Modifier.FINAL)),
+            null
+    );
 
     @Override
     protected MapView getWorldMap(int id) {
@@ -94,7 +97,6 @@ class MapHelper extends com.andavin.images.MapHelper {
         frame.setItem(item, false, false);
         frame.setInvisible(invisible);
         frame.setId(frameId);
-        //setFieldValue(ENTITY_ID, frame, frameId);
         if (rotation != 0) {
             frame.getEntityData().set(ROTATION, rotation);
         }
