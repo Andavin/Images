@@ -205,7 +205,6 @@ final class CreateCommand extends BaseCommand implements Listener {
                     customImage.refresh(player, playerLocation);
                     if (Images.addImage(customImage)) {
                         player.sendMessage("§aSuccessfully created image§f " + customImage.getImageName());
-                        Bukkit.broadcastMessage("sent!");
                         MultiLib.notify("images:syncimage", Base64.getEncoder().encodeToString(toByteArray(customImage)));
                     } else {
                         player.sendMessage("§cFailed to create image at that location");

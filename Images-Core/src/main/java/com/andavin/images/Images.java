@@ -195,7 +195,6 @@ public class Images extends JavaPlugin implements Listener {
         }, 0, 60*20);
 
         MultiLib.onString(this, "images:syncimage", data -> {
-            Bukkit.broadcastMessage("received");
             addImage(toImage(Base64.getDecoder().decode(data)));
         });
     }
