@@ -1,12 +1,8 @@
 Custom Images
 =========
 
-TODO basic description of plugin use
-
-* Bullet points
-* Of plugin use cases
-
-Images is open source! We welcome contributions; the project is licensed using the MIT License.
+Custom Images Critterz fork, made for MultiPaper cross-server compatibility and in-game NFT image purchases.
+Uses critterz-core for internal use.
 
 Compiling
 ---------
