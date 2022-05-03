@@ -24,7 +24,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -33,6 +33,14 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.github.puregero.multilib</pattern>
+                            <shadedPattern>xyz.critterz.blockmarketplace.multilib</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
             </plugin>
         </plugins>
         <resources>
@@ -44,6 +52,12 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.puregero</groupId>
+            <artifactId>multilib</artifactId>
+            <version>1.1.1</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
@@ -64,16 +78,6 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>images-v1_8_R3</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>images-v1_9_R2</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>images-v1_10_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -109,11 +113,6 @@
         <dependency>
             <groupId>${project.parent.groupId}</groupId>
             <artifactId>images-v1_16_R3</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.parent.groupId}</groupId>
-            <artifactId>images-v1_17_R1</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>

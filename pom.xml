@@ -10,17 +10,6 @@
     <modules>
         <module>Images-Core</module>
         <module>Images-Common</module>
-        <module>Images-v1_8_R3</module>
-        <module>Images-v1_9_R2</module>
-        <module>Images-v1_10_R1</module>
-        <module>Images-v1_12_R1</module>
-        <module>Images-v1_13_R2</module>
-        <module>Images-v1_14_R1</module>
-        <module>Images-v1_11_R1</module>
-        <module>Images-v1_15_R1</module>
-        <module>Images-v1_16_R2</module>
-        <module>Images-v1_16_R3</module>
-        <module>Images-v1_17_R1</module>
         <module>Images-v1_18_R1</module>
         <module>Images-v1_18_R2</module>
     </modules>
@@ -43,6 +32,10 @@
             <id>dmulloy2-repo</id>
             <url>https://repo.dmulloy2.net/repository/public/</url>
         </repository>
+        <repository>
+            <id>clojars</id>
+            <url>https://repo.clojars.org</url>
+        </repository>
     </repositories>
 
     <build>
@@ -51,7 +44,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <source>1.8</source>
                         <target>1.8</target>
