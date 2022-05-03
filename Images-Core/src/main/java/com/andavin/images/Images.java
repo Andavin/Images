@@ -30,10 +30,12 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
+import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
+import com.github.puregero.multilib.MultiLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -45,7 +47,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 import java.util.function.Predicate;
 
@@ -159,7 +161,6 @@ public class Images extends JavaPlugin implements Listener {
         }, 40L);
 
         Scheduler.repeatAsync(() -> {
-
             try {
 
                 long now = System.currentTimeMillis();
@@ -176,6 +177,39 @@ public class Images extends JavaPlugin implements Listener {
             } catch (ConcurrentModificationException ignored) {
             }
         }, 200, 30);
+
+        Scheduler.repeatAsync(() -> {
+            CustomImage[] images;
+            synchronized (IMAGES) {
+                images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
+            }
+
+            for (CustomImage image : images) {
+                for(Player player : Bukkit.getOnlinePlayers()) {
+                    if(!MultiLib.isExternalPlayer(player)) {
+                        image.remove(player, true);
+                        image.refresh(player, player.getLocation());
+                    }
+                }
+            }
+        }, 0, 60*20);
+
+        MultiLib.onString(this, "images:syncimage", data -> {
+            Bukkit.broadcastMessage("received");
+            addImage(toImage(Base64.getDecoder().decode(data)));
+        });
+    }
+
+    private CustomImage toImage(byte[] bytes) {
+
+        ByteArrayInputStream byteStream = new ByteArrayInputStream(bytes);
+        try (ObjectInputStream stream = new ObjectInputStream(byteStream)) {
+            return (CustomImage) stream.readObject();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        } catch (ClassNotFoundException e) {
+            throw new UncheckedClassNotFoundException(e.getMessage(), e);
+        }
     }
 
     @EventHandler

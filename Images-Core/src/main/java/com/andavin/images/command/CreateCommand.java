@@ -25,7 +25,9 @@ package com.andavin.images.command;
 
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
+import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 import com.andavin.util.*;
+import com.github.puregero.multilib.MultiLib;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -37,16 +39,15 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.json.simple.JSONObject;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
 import java.net.URI;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -204,6 +205,8 @@ final class CreateCommand extends BaseCommand implements Listener {
                     customImage.refresh(player, playerLocation);
                     if (Images.addImage(customImage)) {
                         player.sendMessage("§aSuccessfully created image§f " + customImage.getImageName());
+                        Bukkit.broadcastMessage("sent!");
+                        MultiLib.notify("images:syncimage", Base64.getEncoder().encodeToString(toByteArray(customImage)));
                     } else {
                         player.sendMessage("§cFailed to create image at that location");
                     }
@@ -281,5 +284,17 @@ final class CreateCommand extends BaseCommand implements Listener {
     private interface ImageSupplier {
 
         BufferedImage get() throws Exception;
+    }
+
+    private byte[] toByteArray(CustomImage image) {
+
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(); // Doesn't need to be closed
+        try (ObjectOutputStream stream = new ObjectOutputStream(byteStream)) {
+            stream.writeObject(image);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        return byteStream.toByteArray();
     }
 }
