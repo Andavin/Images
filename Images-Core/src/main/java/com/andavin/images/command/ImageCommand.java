@@ -38,10 +38,10 @@ import java.util.HashSet;
 public class ImageCommand extends BaseCommand {
 
     ImageCommand() {
-        super("image", "images.command.manage");
+        super("nft", "images.command.manage");
         this.setAliases("customimage", "images", "img");
         this.setDesc("Manage custom images.");
-        this.setUsage("/image [create|delete|list|import|transfer]");
+        this.setUsage("/nft [create|delete|list|import|transfer]");
         this.addChild(new CreateCommand());
         this.addChild(new DeleteCommand());
         this.addChild(new ListCommand());
