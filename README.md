@@ -4,6 +4,12 @@ Custom Images
 Custom Images Critterz fork, made for MultiPaper cross-server compatibility and in-game NFT image purchases.
 Uses critterz-core for internal use.
 
+Commands
+---------
+
+- /nft create <contract address> <token id> - creates a new NFT paste. Permission node: 'images.command.create'
+- /nft delete - deletes an existing NFT image. Permission node: 'images.command.delete'
+
 Compiling
 ---------
 

@@ -25,11 +25,11 @@ package com.andavin.images.command;
 
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
-import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 import com.andavin.util.*;
 import com.github.puregero.multilib.MultiLib;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -39,7 +39,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
+import xyz.critterz.core.http.PostRequest;
+import xyz.critterz.core.variables.Variable;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -66,12 +68,14 @@ final class CreateCommand extends BaseCommand implements Listener {
     private static final Predicate<String> URL_TEST = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]").asPredicate();
     private final Map<UUID, CreateImageTask> creating = new HashMap<>();
 
+    private int nftImportPrice = 300;
+
     CreateCommand() {
         super("create", "images.command.create");
         this.setAliases("new", "add", "load");
-        this.setMinimumArgs(1);
-        this.setUsage("/image create <image name> [scale percent]");
-        this.setDesc("Create and begin pasting a new custom image");
+        this.setMinimumArgs(2);
+        this.setUsage("/nft create <contract address> <token id>");
+        this.setDesc("Create and begin pasting a new custom nft");
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
     }
 
@@ -80,7 +84,9 @@ final class CreateCommand extends BaseCommand implements Listener {
 
         ImageSupplier imageSupplier;
         Supplier<String> nameSupplier;
-        String imageNameArg = args[0];
+        String address = args[0];
+        String tokenId = args[1];
+        String imageNameArg = Variable.NFT_RENDER_ENDPOINT.getValue() + "/?contractAddress="+address+"&tokenId="+tokenId+"&size=500";
         if (URL_TEST.test(imageNameArg)) {
 
             AtomicReference<String> fileName = new AtomicReference<>();
@@ -100,7 +106,7 @@ final class CreateCommand extends BaseCommand implements Listener {
         }
 
         double scale;
-        if (args.length > 1) {
+        /*if (args.length > 1) {
 
             try {
                 scale = Double.parseDouble(args[1]) / 100;
@@ -113,12 +119,15 @@ final class CreateCommand extends BaseCommand implements Listener {
                 player.sendMessage("§cScale must be more than 1%, but got §f" + scale * 100 + '%');
                 return;
             }
-        } else {
+        } else {*/
             scale = 1;
-        }
+        //}
 
         UUID id = player.getUniqueId();
         this.creating.put(id, new CreateImageTask(scale, imageSupplier, nameSupplier));
+        player.sendMessage(ChatColor.YELLOW + "You are trying to paste NFT token " + ChatColor.GOLD + tokenId + ChatColor.YELLOW + " from contract " + ChatColor.GOLD + address);
+        player.sendMessage(ChatColor.YELLOW  + "Right click the top left corner. The image will then paste from left to right in a 3x3 square!");
+        player.sendMessage(ChatColor.YELLOW + "Pasting this NFT will cost " + ChatColor.RED + nftImportPrice);
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
                 "§eRight Click to place§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.creating.containsKey(id));
@@ -141,7 +150,6 @@ final class CreateCommand extends BaseCommand implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
-
         Player player = event.getPlayer();
         CreateImageTask task = this.creating.remove(player.getUniqueId());
         if (task == null) {
@@ -193,22 +201,43 @@ final class CreateCommand extends BaseCommand implements Listener {
 
                 Scheduler.async(() -> {
 
-                    player.sendMessage("§aStarting image paste");
+                    player.sendMessage(ChatColor.YELLOW + "Starting image paste..");
                     BufferedImage image = task.readImage();
                     if (image == null) {
-                        player.sendMessage("§cInvalid image file! Please choose another.");
+                        player.sendMessage("§cInvalid image file! Please make sure the contact address and token id are correct.");
                         return;
                     }
 
-                    CustomImage customImage = new CustomImage(player.getUniqueId(),
-                            task.nameSupplier.get(), location, direction, image);
-                    customImage.refresh(player, playerLocation);
-                    if (Images.addImage(customImage)) {
-                        player.sendMessage("§aSuccessfully created image§f " + customImage.getImageName());
-                        MultiLib.notify("images:syncimage", Base64.getEncoder().encodeToString(toByteArray(customImage)));
-                    } else {
-                        player.sendMessage("§cFailed to create image at that location");
-                    }
+                    player.sendMessage(ChatColor.YELLOW + "Attempting to purchase action..");
+                    JSONObject json = new JSONObject();
+                    json.put("burnAmount", nftImportPrice);
+                    json.put("burnType", 6);
+                    JSONObject jsonMetadata = new JSONObject();
+                    jsonMetadata.put("cost", nftImportPrice);
+                    jsonMetadata.put("type", "nft_map");
+                    json.put("burnMetadata", jsonMetadata);
+
+                    PostRequest postRequest = new PostRequest(Variable.NODE_BACKEND_ENDPOINT.getValue() + "/block/burn")
+                            .withJsonVariables(json).withSubject(player.getUniqueId().toString());
+
+                    postRequest.send().whenComplete((response, throwable) -> {
+                        if(response.statusCode() == 200) {
+                            CustomImage customImage = new CustomImage(player.getUniqueId(),
+                                    task.nameSupplier.get(), location, direction, image);
+                            customImage.refresh(player, playerLocation);
+                            if (Images.addImage(customImage)) {
+                            } else {
+                                player.sendMessage("§cFailed to create image at that location");
+                            }
+                            player.sendMessage("§aSuccessfully created image");
+                            MultiLib.notify("images:syncimage", Base64.getEncoder().encodeToString(toByteArray(customImage)));
+                        } else {
+                            player.sendMessage(ChatColor.RED + String.valueOf(response.statusCode()) + " - purchase failed - " + response.body());
+                        }
+                    }).exceptionally(throwable -> {
+                        player.sendMessage(ChatColor.RED + throwable.getMessage());
+                        return null;
+                    });
                 });
 
                 break;

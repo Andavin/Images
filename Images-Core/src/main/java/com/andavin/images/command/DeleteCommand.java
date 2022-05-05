@@ -53,7 +53,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
     DeleteCommand() {
         super("delete", "images.command.delete");
         this.setAliases("del", "remove", "unload");
-        this.setUsage("/image delete");
+        this.setUsage("/nft delete");
         this.setDesc("Delete an existing image by clicking on it");
         this.addChild(new DeleteNearCommand());
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
