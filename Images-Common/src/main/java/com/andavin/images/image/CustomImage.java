@@ -59,16 +59,20 @@ public class CustomImage implements Serializable {
 
     private final UUID creator;
     private final UUID uuid;
+    private final String contract;
+    private final int tokenId;
     private final String imageName;
     private final BlockFace direction;
     private final Map<Integer, CustomImageSection> sections = new HashMap<>();
 
-    public CustomImage(String imageName, Location location, BlockFace direction, BufferedImage image) {
-        this(UNKNOWN_CREATOR, imageName, location, direction, image);
+    public CustomImage(String imageName, String contract, int tokenId, Location location, BlockFace direction, BufferedImage image) {
+        this(UNKNOWN_CREATOR, contract, tokenId, imageName, location, direction, image);
     }
 
-    public CustomImage(UUID creator, String imageName, Location location,
+    public CustomImage(UUID creator, String contract, int tokenId, String imageName, Location location,
                        BlockFace direction, BufferedImage image) {
+        this.contract = contract;
+        this.tokenId = tokenId;
         this.imageName = imageName;
         this.direction = direction;
         this.location = location;
@@ -110,6 +114,14 @@ public class CustomImage implements Serializable {
 
     public UUID getUuid() {
         return uuid;
+    }
+
+    public String getContract() {
+        return contract;
+    }
+
+    public int getTokenId() {
+        return tokenId;
     }
 
     /**

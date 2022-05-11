@@ -223,11 +223,12 @@ final class CreateCommand extends BaseCommand implements Listener {
                     }
                     player.sendMessage(ChatColor.YELLOW + "Attempting to mint NFT..");
 
-                    CustomImage customImage = new CustomImage(player.getUniqueId(),
-
+                    CustomImage customImage = new CustomImage(player.getUniqueId(), task.contract, task.tokenId,
                             task.nameSupplier.get(), location, direction, image);
+
                     JSONObject json = new JSONObject();
                     json.put("assetUuid", customImage.getUuid());
+                    json.put("plotOwnerUuid", getRegion(location).getOwners().getUniqueIds().toArray()[0]);
                     json.put("tokenAddress", task.contract);
                     json.put("tokenId", task.tokenId);
 
@@ -323,6 +324,18 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return null;
             }
         }
+    }
+
+    private ProtectedRegion getRegion(Location location) {
+        ProtectedRegion protectedRegion = null;
+
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(location.getWorld()));
+
+        for (ProtectedRegion region : regionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location))) {
+            protectedRegion = region;
+        }
+        return protectedRegion;
     }
 
     private boolean isMemberOfRegion(Location location, Player player) {

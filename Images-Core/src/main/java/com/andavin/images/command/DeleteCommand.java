@@ -44,6 +44,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.json.JSONObject;
+import xyz.critterz.core.http.PostRequest;
+import xyz.critterz.core.variables.Variable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -108,13 +111,30 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
                 Scheduler.async(() -> {
 
-                    if (this.deleting.remove(player.getUniqueId()) && Images.removeImage(image)) {
-                        MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
-                        image.destroy();
-                        player.sendMessage("§aImage successfully deleted");
-                    } else {
-                        player.sendMessage("§cFailed to delete image");
-                    }
+                    this.deleting.remove(player.getUniqueId());
+                    JSONObject json = new JSONObject();
+                    json.put("plotOwnerUuid", getRegion(clicker.getLocation()).getOwners().getUniqueIds().toArray()[0]);
+                    json.put("tokenAddress", image.getContract());
+                    json.put("tokenId", image.getTokenId());
+
+                    PostRequest postRequest = new PostRequest(Variable.NODE_BACKEND_ENDPOINT.getValue() + "/nft-art/delete")
+                            .withJsonVariables(json).withSubject(player.getUniqueId().toString());
+
+                    postRequest.send().whenComplete((response, throwable) -> {
+                        if (response.statusCode() == 200) {
+                            if (!Images.removeImage(image)) {
+                                image.destroy();
+                                MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
+                                player.sendMessage("§aNFT successfully deleted");
+                            } else
+                                player.sendMessage("§cFailed to delete NFT");
+                        } else {
+                            player.sendMessage(ChatColor.RED + String.valueOf(response.statusCode()) + " - delete failed - " + response.body());
+                        }
+                    }).exceptionally(throwable -> {
+                        player.sendMessage(ChatColor.RED + throwable.getMessage());
+                        return null;
+                    });
                 });
             }
         });
@@ -141,6 +161,18 @@ final class DeleteCommand extends BaseCommand implements Listener {
         if (MinecraftVersion.lessThan(v1_15)) {
             this.cancel(event.getPlayer());
         }
+    }
+
+    private ProtectedRegion getRegion(Location location) {
+        ProtectedRegion protectedRegion = null;
+
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(location.getWorld()));
+
+        for (ProtectedRegion region : regionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location))) {
+            protectedRegion = region;
+        }
+        return protectedRegion;
     }
 
     private boolean isMemberOfRegion(Location location, Player player) {
