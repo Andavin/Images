@@ -17,6 +17,11 @@ Compiling
 2. Compile from the parent project of Images that all modules are contained within
 3. Run `mvn clean package`
 
+Variable Dependency
+------------
+  
+This plugin relies on the `NFT_RENDER_ENDPOINT` variable specified in the `critterz-core` library, from which the image will be fetched upon map creation.
+
 Contributing
 ------------
 
