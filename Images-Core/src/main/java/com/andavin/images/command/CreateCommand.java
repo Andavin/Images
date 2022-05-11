@@ -27,6 +27,12 @@ import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
 import com.andavin.util.*;
 import com.github.puregero.multilib.MultiLib;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -68,7 +74,7 @@ final class CreateCommand extends BaseCommand implements Listener {
     private static final Predicate<String> URL_TEST = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]").asPredicate();
     private final Map<UUID, CreateImageTask> creating = new HashMap<>();
 
-    private int nftImportPrice = 300;
+    private int nftImportPrice = 0;
 
     CreateCommand() {
         super("create", "images.command.create");
@@ -151,6 +157,10 @@ final class CreateCommand extends BaseCommand implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        if(!player.hasPermission("critterz.admin") && !isMemberOfRegion(event.getClickedBlock().getLocation(), event.getPlayer())) {
+            player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
+            return;
+        }
         CreateImageTask task = this.creating.remove(player.getUniqueId());
         if (task == null) {
             return;
@@ -307,6 +317,20 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return null;
             }
         }
+    }
+
+    private boolean isMemberOfRegion(Location location, Player player) {
+        boolean isMember = false;
+
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(location.getWorld()));
+
+        for (ProtectedRegion region : regionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location))) {
+            if(region.isMember(WorldGuardPlugin.inst().wrapPlayer(player))) {
+                isMember = true;
+            }
+        }
+        return isMember;
     }
 
     private interface ImageSupplier {

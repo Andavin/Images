@@ -197,6 +197,12 @@ public class Images extends JavaPlugin implements Listener {
         MultiLib.onString(this, "images:syncimage", data -> {
             addImage(toImage(Base64.getDecoder().decode(data)));
         });
+
+        MultiLib.onString(this, "images:deleteimage", data -> {
+            CustomImage image = toImage(Base64.getDecoder().decode(data));
+            removeImage(image);
+            image.destroy();
+        });
     }
 
     private CustomImage toImage(byte[] bytes) {

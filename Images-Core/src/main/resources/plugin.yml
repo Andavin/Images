@@ -5,6 +5,7 @@ authors: [ 'Andavin' ]
 description: ${project.description}
 website: ${project.url}
 softdepend: [ 'Multiverse-Core', 'PlotSquared', 'ProtocolLib' ]
+depend: [WorldGuard]
 api-version: '1.13'
 commands:
   nft:

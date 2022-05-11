@@ -36,6 +36,10 @@
             <id>clojars</id>
             <url>https://repo.clojars.org</url>
         </repository>
+        <repository>
+            <id>sk89q-repo</id>
+            <url>https://maven.enginehub.org/repo/</url>
+        </repository>
     </repositories>
 
     <build>

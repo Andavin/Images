@@ -25,16 +25,31 @@ package com.andavin.images.command;
 
 import com.andavin.images.Images;
 import com.andavin.images.PacketListener.InteractType;
+import com.andavin.images.image.CustomImage;
 import com.andavin.util.ActionBarUtil;
 import com.andavin.util.MinecraftVersion;
 import com.andavin.util.Scheduler;
+import com.github.puregero.multilib.MultiLib;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+import com.sk89q.worldguard.WorldGuard;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
+import com.sk89q.worldguard.protection.regions.RegionContainer;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -94,6 +109,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
                 Scheduler.async(() -> {
 
                     if (this.deleting.remove(player.getUniqueId()) && Images.removeImage(image)) {
+                        MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
                         image.destroy();
                         player.sendMessage("§aImage successfully deleted");
                     } else {
@@ -125,6 +141,32 @@ final class DeleteCommand extends BaseCommand implements Listener {
         if (MinecraftVersion.lessThan(v1_15)) {
             this.cancel(event.getPlayer());
         }
+    }
+
+    private boolean isMemberOfRegion(Location location, Player player) {
+        boolean isMember = false;
+
+        RegionContainer container = WorldGuard.getInstance().getPlatform().getRegionContainer();
+        RegionManager regionManager = container.get(BukkitAdapter.adapt(location.getWorld()));
+
+        for (ProtectedRegion region : regionManager.getApplicableRegions(BukkitAdapter.asBlockVector(location))) {
+            if(region.isMember(WorldGuardPlugin.inst().wrapPlayer(player))) {
+                isMember = true;
+            }
+        }
+        return isMember;
+    }
+
+    private byte[] toByteArray(CustomImage image) {
+
+        ByteArrayOutputStream byteStream = new ByteArrayOutputStream(); // Doesn't need to be closed
+        try (ObjectOutputStream stream = new ObjectOutputStream(byteStream)) {
+            stream.writeObject(image);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        return byteStream.toByteArray();
     }
 
     private boolean cancel(Player player) {
