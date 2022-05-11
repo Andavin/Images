@@ -58,6 +58,7 @@ public class CustomImage implements Serializable {
     private transient Location location;
 
     private final UUID creator;
+    private final UUID uuid;
     private final String imageName;
     private final BlockFace direction;
     private final Map<Integer, CustomImageSection> sections = new HashMap<>();
@@ -72,6 +73,7 @@ public class CustomImage implements Serializable {
         this.direction = direction;
         this.location = location;
         this.creator = creator;
+        this.uuid = UUID.randomUUID();
         this.update(image);
     }
 
@@ -104,6 +106,10 @@ public class CustomImage implements Serializable {
      */
     public UUID getCreator() {
         return creator;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 
     /**
