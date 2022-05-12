@@ -97,6 +97,10 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
         Images.addListenerTask(player, (clicker, image, section, action, hand) -> {
 
+            if(getRegion(player.getLocation()).getOwners().getUniqueIds().toArray().length == 0) {
+                player.sendMessage(ChatColor.RED + "This plot needs to have an owner!");
+                return;
+            }
             if (!image.getCreator().equals(UNKNOWN_CREATOR) &&
                     Images.getInstance().getConfig().getBoolean("permissions.creator-restricted")) {
 
@@ -113,7 +117,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
                     this.deleting.remove(player.getUniqueId());
                     JSONObject json = new JSONObject();
-                    json.put("plotOwnerUuid", getRegion(clicker.getLocation()).getOwners().getUniqueIds().toArray()[0]);
+                    json.put("plotOwnerUuid", getRegion(clicker.getLocation()).getOwners().getUniqueIds().toArray()[0].toString());
                     json.put("tokenAddress", image.getContract());
                     json.put("tokenId", image.getTokenId());
 

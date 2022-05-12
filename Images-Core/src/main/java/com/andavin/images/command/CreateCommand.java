@@ -165,6 +165,10 @@ final class CreateCommand extends BaseCommand implements Listener {
             player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
             return;
         }
+        if(getRegion(player.getLocation()).getOwners().getUniqueIds().toArray().length == 0) {
+            player.sendMessage(ChatColor.RED + "This plot needs to have an owner!");
+            return;
+        }
         CreateImageTask task = this.creating.remove(player.getUniqueId());
         if (task == null) {
             return;
@@ -227,8 +231,8 @@ final class CreateCommand extends BaseCommand implements Listener {
                             task.nameSupplier.get(), location, direction, image);
 
                     JSONObject json = new JSONObject();
-                    json.put("assetUuid", customImage.getUuid());
-                    json.put("plotOwnerUuid", getRegion(location).getOwners().getUniqueIds().toArray()[0]);
+                    json.put("assetUuid", customImage.getUuid().toString());
+                    json.put("plotOwnerUuid", getRegion(location).getOwners().getUniqueIds().toArray()[0].toString());
                     json.put("tokenAddress", task.contract);
                     json.put("tokenId", task.tokenId);
 
