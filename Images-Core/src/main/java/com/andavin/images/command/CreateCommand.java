@@ -272,7 +272,7 @@ final class CreateCommand extends BaseCommand implements Listener {
     }
 
     private void deleteOldAsset(Player caller, CreateImageTask task) {
-        CustomImage image = PacketListener.getImage(task.contract, task.tokenId);
+        CustomImage image = Images.getImage(task.contract, task.tokenId);
         if(image == null) {
             caller.sendMessage(ChatColor.RED + "Failed to delete old NFT asset, not found!");
             return;
