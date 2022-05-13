@@ -97,6 +97,23 @@ public abstract class PacketListener<T, U> implements Versioned {
         }
     }
 
+    public static CustomImage getImage(String contract, int tokenId) {
+
+        List<CustomImage> images = getImages.get();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (images) {
+
+            for (CustomImage image : images) {
+
+                if(image.getContract().equals(contract) && image.getTokenId() == tokenId) {
+                    return image;
+                }
+
+            }
+            return null;
+        }
+    }
+
     /**
      * Call the given listener for the player.
      *

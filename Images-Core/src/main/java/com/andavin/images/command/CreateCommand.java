@@ -24,7 +24,9 @@
 package com.andavin.images.command;
 
 import com.andavin.images.Images;
+import com.andavin.images.PacketListener;
 import com.andavin.images.image.CustomImage;
+import com.andavin.images.image.CustomImageSection;
 import com.andavin.util.*;
 import com.github.puregero.multilib.MultiLib;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -248,6 +250,9 @@ final class CreateCommand extends BaseCommand implements Listener {
                             }
                             player.sendMessage("§aSuccessfully created image");
                             MultiLib.notify("images:syncimage", Base64.getEncoder().encodeToString(toByteArray(customImage)));
+                        } else if (response.statusCode() == 409) {
+                            player.sendMessage(ChatColor.YELLOW + "An existing import already exists. Attempting to delete old asset..");
+                            deleteOldAsset(player, task);
                         } else {
                             player.sendMessage(ChatColor.RED + String.valueOf(response.statusCode()) + " - import failed - " + response.body());
                         }
@@ -264,6 +269,38 @@ final class CreateCommand extends BaseCommand implements Listener {
                 player.sendMessage("§cCreation cancelled");
                 break;
         }
+    }
+
+    private void deleteOldAsset(Player caller, CreateImageTask task) {
+        CustomImage image = PacketListener.getImage(task.contract, task.tokenId);
+        if(image == null) {
+            caller.sendMessage(ChatColor.RED + "Failed to delete old NFT asset, not found!");
+            return;
+        }
+
+        JSONObject json = new JSONObject();
+        json.put("plotOwnerUuid", getRegion(image.getLocation()).getOwners().getUniqueIds().toArray()[0].toString());
+        json.put("tokenAddress", task.contract);
+        json.put("tokenId", task.tokenId);
+
+        PostRequest postRequest = new PostRequest(Variable.NODE_BACKEND_ENDPOINT.getValue() + "/nft-art/delete")
+                .withJsonVariables(json).withSubject(caller.getUniqueId().toString());
+
+        postRequest.send().whenComplete((response, throwable) -> {
+            if (response.statusCode() == 200) {
+                if (Images.removeImage(image)) {
+                    image.destroy();
+                    MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
+                    caller.sendMessage("§aNFT successfully deleted, you can now create token " + task.tokenId);
+                } else
+                    caller.sendMessage("§cFailed to delete NFT");
+            } else {
+                caller.sendMessage(ChatColor.RED + String.valueOf(response.statusCode()) + " - delete failed - " + response.body());
+            }
+        }).exceptionally(throwable -> {
+            caller.sendMessage(ChatColor.RED + throwable.getMessage());
+            return null;
+        });
     }
 
     @EventHandler

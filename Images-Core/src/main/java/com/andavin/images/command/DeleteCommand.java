@@ -117,7 +117,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
                     this.deleting.remove(player.getUniqueId());
                     JSONObject json = new JSONObject();
-                    json.put("plotOwnerUuid", getRegion(clicker.getLocation()).getOwners().getUniqueIds().toArray()[0].toString());
+                    json.put("plotOwnerUuid", getRegion(image.getLocation()).getOwners().getUniqueIds().toArray()[0].toString());
                     json.put("tokenAddress", image.getContract());
                     json.put("tokenId", image.getTokenId());
 
@@ -126,7 +126,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
 
                     postRequest.send().whenComplete((response, throwable) -> {
                         if (response.statusCode() == 200) {
-                            if (!Images.removeImage(image)) {
+                            if (Images.removeImage(image)) {
                                 image.destroy();
                                 MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
                                 player.sendMessage("§aNFT successfully deleted");

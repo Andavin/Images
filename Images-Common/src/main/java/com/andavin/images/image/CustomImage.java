@@ -124,6 +124,10 @@ public class CustomImage implements Serializable {
         return tokenId;
     }
 
+    public Location getLocation() {
+        return location;
+    }
+
     /**
      * Get the name of the image file.
      *
