@@ -465,6 +465,20 @@ public class Images extends JavaPlugin implements Listener {
         }
     }
 
+    public static CustomImage getImage(String contract, int tokenId) {
+        CustomImage[] images;
+        synchronized (IMAGES) {
+            images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
+        }
+
+        for (CustomImage image : images) {
+            if(image.getContract().equals(contract) && image.getTokenId() == tokenId) {
+                return image;
+            }
+        }
+        return null;
+    }
+
     private void refreshImages(Player player, Location location) {
 
         CustomImage[] images;
