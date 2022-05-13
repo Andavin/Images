@@ -472,7 +472,7 @@ public class Images extends JavaPlugin implements Listener {
         }
 
         for (CustomImage image : images) {
-            if(image.getContract().equals(contract) && image.getTokenId() == tokenId) {
+            if(image.getContract() != null && image.getContract().equals(contract) && image.getTokenId() == tokenId) {
                 return image;
             }
         }
