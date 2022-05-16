@@ -163,16 +163,18 @@ final class CreateCommand extends BaseCommand implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
+        CreateImageTask task = this.creating.remove(player.getUniqueId());
+        if (task == null) {
+            return;
+        }
+
         if(!player.hasPermission("critterz.admin") && !isMemberOfRegion(event.getClickedBlock().getLocation(), event.getPlayer())) {
             player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
             return;
         }
-        if(getRegion(player.getLocation()).getOwners().getUniqueIds().toArray().length == 0) {
+
+        if(getRegion(player.getLocation()) != null && getRegion(player.getLocation()).getOwners().getUniqueIds().toArray().length == 0) {
             player.sendMessage(ChatColor.RED + "This plot needs to have an owner!");
-            return;
-        }
-        CreateImageTask task = this.creating.remove(player.getUniqueId());
-        if (task == null) {
             return;
         }
 
