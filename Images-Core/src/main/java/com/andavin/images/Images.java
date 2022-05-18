@@ -30,6 +30,7 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
+import com.andavin.images.listener.ClickImageListener;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 import com.andavin.util.LocationUtil;
 import com.andavin.util.Logger;
@@ -37,6 +38,7 @@ import com.andavin.util.Scheduler;
 import com.andavin.util.TimeoutMetadata;
 import com.github.puregero.multilib.MultiLib;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -98,6 +100,7 @@ public class Images extends JavaPlugin implements Listener {
     private static final Map<UUID, Long> LAST_MOVE_TIMES = new HashMap<>();
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
     private static final Map<UUID, ImageListener> LISTENER_TASKS = new HashMap<>(4);
+    private static final Map<UUID, ImageListener> LISTENER_TASKS_ALWAYS = new HashMap<>();
 
     @Override
     public void onLoad() {
@@ -120,6 +123,7 @@ public class Images extends JavaPlugin implements Listener {
             this.protocolLib = true;
             Logger.info("ProtocolLib detected. Enabling generic packet handling...");
             ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
+            ProtocolLibListener.registerAlways(this, LISTENER_TASKS_ALWAYS, BRIDGE);
         }
 
         FileConfiguration config = this.getConfig();
@@ -203,6 +207,8 @@ public class Images extends JavaPlugin implements Listener {
             removeImage(image);
             image.destroy();
         });
+
+        Bukkit.getPluginManager().registerEvents(new ClickImageListener(), this);
     }
 
     private CustomImage toImage(byte[] bytes) {
@@ -400,6 +406,15 @@ public class Images extends JavaPlugin implements Listener {
      */
     public static void addListenerTask(Player player, ImageListener task) {
         LISTENER_TASKS.put(player.getUniqueId(), task);
+    }
+
+    public static void addListenerTaskAlawys(Player player, ImageListener task) {
+        LISTENER_TASKS_ALWAYS.put(player.getUniqueId(), task);
+    }
+
+    public static void removeListenerTaskAlawys(Player player) {
+        if(LISTENER_TASKS_ALWAYS.containsKey(player.getUniqueId()))
+            LISTENER_TASKS_ALWAYS.remove(LISTENER_TASKS_ALWAYS.get(player.getUniqueId()));
     }
 
     /**

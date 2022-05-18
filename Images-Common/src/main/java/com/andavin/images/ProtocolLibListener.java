@@ -24,6 +24,7 @@
 package com.andavin.images;
 
 import com.andavin.images.PacketListener.ImageListener;
+import com.andavin.util.Scheduler;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Client;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -80,6 +81,21 @@ class ProtocolLibListener<T, U> extends PacketAdapter {
                     ImageListener listener = listenerTasks.remove(clicker.getUniqueId());
                     if (listener != null) {
                         listener.click(clicker, image, section, action, hand);
+                    }
+                }, bridge));
+    }
+
+    static void registerAlways(Plugin plugin, Map<UUID, ImageListener> listenerTasks, PacketListener bridge) {
+        ProtocolLibrary.getProtocolManager().addPacketListener(
+                new ProtocolLibListener(plugin, (clicker, image, section, action, hand) -> {
+
+                    ImageListener listener = listenerTasks.get(clicker.getUniqueId());
+                    if (listenerTasks.get(clicker.getUniqueId()) != null) {
+                        listener.click(clicker, image, section, action, hand);
+                        listenerTasks.remove(clicker.getUniqueId());
+                        Scheduler.laterAsync(() -> {
+                            listenerTasks.put(clicker.getUniqueId(), listener);
+                            }, 2L);
                     }
                 }, bridge));
     }
