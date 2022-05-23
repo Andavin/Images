@@ -30,6 +30,7 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
+import com.andavin.images.image.CustomImageSection;
 import com.andavin.images.listener.ClickImageListener;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
 import com.andavin.util.LocationUtil;
@@ -202,10 +203,21 @@ public class Images extends JavaPlugin implements Listener {
             addImage(toImage(Base64.getDecoder().decode(data)));
         });
 
-        MultiLib.onString(this, "images:deleteimage", data -> {
-            CustomImage image = toImage(Base64.getDecoder().decode(data));
-            removeImage(image);
-            image.destroy();
+        MultiLib.onString(this, "images:deleteimage", string -> {
+            String[] args = string.split("\t");
+            String contract = args[0];
+            int tokenId = Integer.parseInt(args[1]);
+            Scheduler.async(() -> {
+                synchronized (IMAGES) {
+                    for (CustomImage image : IMAGES) {
+                        if (contract.equals(image.getContract()) && tokenId == image.getTokenId()) {
+                            removeImage(image);
+                            image.destroy();
+                            return;
+                        }
+                    }
+                }
+            });
         });
 
         Bukkit.getPluginManager().registerEvents(new ClickImageListener(), this);

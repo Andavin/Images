@@ -128,7 +128,7 @@ final class DeleteCommand extends BaseCommand implements Listener {
                         if (response.statusCode() == 200) {
                             if (Images.removeImage(image)) {
                                 image.destroy();
-                                MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
+                                MultiLib.notify("images:deleteimage", image.getContract() + "\t" + image.getTokenId());
                                 player.sendMessage("§aNFT successfully deleted");
                             } else
                                 player.sendMessage("§cFailed to delete NFT");

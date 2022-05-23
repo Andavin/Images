@@ -292,7 +292,7 @@ final class CreateCommand extends BaseCommand implements Listener {
             if (response.statusCode() == 200) {
                 if (Images.removeImage(image)) {
                     image.destroy();
-                    MultiLib.notify("images:deleteimage", Base64.getEncoder().encodeToString(toByteArray(image)));
+                    MultiLib.notify("images:deleteimage", image.getContract() + "\t" + image.getTokenId());
                     caller.sendMessage("§aNFT successfully deleted, you can now create token " + task.tokenId);
                 } else
                     caller.sendMessage("§cFailed to delete NFT");
