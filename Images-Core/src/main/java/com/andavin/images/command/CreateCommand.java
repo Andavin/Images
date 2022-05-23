@@ -168,16 +168,6 @@ final class CreateCommand extends BaseCommand implements Listener {
             return;
         }
 
-        if(!player.hasPermission("critterz.admin") && !isMemberOfRegion(event.getClickedBlock().getLocation(), event.getPlayer())) {
-            player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
-            return;
-        }
-
-        if(getRegion(player.getLocation()) != null && getRegion(player.getLocation()).getOwners().getUniqueIds().toArray().length == 0) {
-            player.sendMessage(ChatColor.RED + "This plot needs to have an owner!");
-            return;
-        }
-
         switch (event.getAction()) {
             case RIGHT_CLICK_AIR:
             case RIGHT_CLICK_BLOCK:
@@ -221,6 +211,16 @@ final class CreateCommand extends BaseCommand implements Listener {
                     }
                 }
 
+                if(!player.hasPermission("critterz.admin") && !isMemberOfRegion(location, event.getPlayer())) {
+                    player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
+                    return;
+                }
+
+                if(getRegion(location) != null && getRegion(location).getOwners().getUniqueIds().toArray().length == 0) {
+                    player.sendMessage(ChatColor.RED + "This plot needs to have an owner!");
+                    return;
+                }
+
                 Scheduler.async(() -> {
 
                     player.sendMessage(ChatColor.YELLOW + "Starting image paste..");
@@ -233,6 +233,13 @@ final class CreateCommand extends BaseCommand implements Listener {
 
                     CustomImage customImage = new CustomImage(player.getUniqueId(), task.contract, task.tokenId,
                             task.nameSupplier.get(), location, direction, image);
+
+                    for (CustomImageSection section : customImage.getSections()) {
+                        if(!player.hasPermission("critterz.admin") && !isMemberOfRegion(section.getLocation(), event.getPlayer())) {
+                            player.sendMessage(ChatColor.RED + "You need to be a member of this plot!");
+                            return;
+                        }
+                    }
 
                     JSONObject json = new JSONObject();
                     json.put("assetUuid", customImage.getUuid().toString());
