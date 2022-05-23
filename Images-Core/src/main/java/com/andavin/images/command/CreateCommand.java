@@ -35,6 +35,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import io.vavr.control.Either;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -45,6 +46,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.json.JSONObject;
@@ -74,7 +76,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 final class CreateCommand extends BaseCommand implements Listener {
 
     private static final Predicate<String> URL_TEST = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]").asPredicate();
-    private final Map<UUID, CreateImageTask> creating = new HashMap<>();
+    private final Map<UUID, Either<CreateImageTask, ExternalCreateImageTask>> creating = new HashMap<>();
 
     CreateCommand() {
         super("create", "images.command.create");
@@ -83,6 +85,32 @@ final class CreateCommand extends BaseCommand implements Listener {
         this.setUsage("/nft create <contract address> <token id>");
         this.setDesc("Create and begin pasting a new custom nft");
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
+
+        MultiLib.onString(Images.getInstance(), "images:addtocreating", uuid ->
+                creating.put(UUID.fromString(uuid), Either.right(new ExternalCreateImageTask()))
+        );
+
+        MultiLib.onString(Images.getInstance(), "images:removefromcreating", uuid ->
+                creating.remove(UUID.fromString(uuid))
+        );
+
+        MultiLib.onString(Images.getInstance(), "images:usecreating", string -> {
+            String[] args = string.split("\t");
+            Player player = Bukkit.getPlayer(UUID.fromString(args[0]));
+            BlockFace blockFace = BlockFace.valueOf(args[1]);
+            Block block = null;
+
+            if (MultiLib.isLocalPlayer(player)) {
+                if (args.length > 2) {
+                    int x = Integer.parseInt(args[2]);
+                    int y = Integer.parseInt(args[3]);
+                    int z = Integer.parseInt(args[4]);
+                    block = player.getWorld().getBlockAt(x, y, z);
+                }
+
+                onInteract(new PlayerInteractEvent(player, block == null ? Action.RIGHT_CLICK_AIR : Action.RIGHT_CLICK_BLOCK, player.getInventory().getItemInMainHand(), block, blockFace));
+            };
+        });
     }
 
     @Override
@@ -136,7 +164,9 @@ final class CreateCommand extends BaseCommand implements Listener {
         //}
 
         UUID id = player.getUniqueId();
-        this.creating.put(id, new CreateImageTask(scale, imageSupplier, nameSupplier, address, tokenId));
+        CreateImageTask createImageTask = new CreateImageTask(scale, imageSupplier, nameSupplier, address, tokenId);
+        this.creating.put(id, Either.left(createImageTask));
+        MultiLib.notify("images:addtocreating", player.getUniqueId().toString());
         player.sendMessage(ChatColor.YELLOW + "You are trying to paste NFT token " + ChatColor.GOLD + tokenId + ChatColor.YELLOW + " from contract " + ChatColor.GOLD + address);
         player.sendMessage(ChatColor.YELLOW  + "Right click the top left corner. The image will then paste from left to right in a 3x3 square!");
         player.sendMessage(ChatColor.YELLOW + "You need to own this NFT in order to import it!");
@@ -163,8 +193,8 @@ final class CreateCommand extends BaseCommand implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
-        CreateImageTask task = this.creating.remove(player.getUniqueId());
-        if (task == null) {
+        Either<CreateImageTask, ExternalCreateImageTask> creating = this.creating.remove(player.getUniqueId());
+        if (creating == null) {
             return;
         }
 
@@ -173,6 +203,16 @@ final class CreateCommand extends BaseCommand implements Listener {
             case RIGHT_CLICK_BLOCK:
 
                 event.setCancelled(true);
+
+                if (creating.isRight()) {
+                    Block block = event.getClickedBlock();
+                    MultiLib.notify("images:usecreating", player.getUniqueId() + "\t" + event.getBlockFace().name() + (block != null ? "\t" + block.getX() + "\t" + block.getY() + "\t" + block.getZ() : ""));
+                    return;
+                }
+
+                MultiLib.notify("images:removefromcreating", player.getUniqueId().toString());
+
+                CreateImageTask task = creating.getLeft();
                 BlockFace direction;
                 Location location;
                 Location playerLocation = player.getLocation();
@@ -275,6 +315,7 @@ final class CreateCommand extends BaseCommand implements Listener {
             case LEFT_CLICK_AIR:
             case LEFT_CLICK_BLOCK:
                 event.setCancelled(true);
+                MultiLib.notify("images:removefromcreating", player.getUniqueId().toString());
                 player.sendMessage("§cCreation cancelled");
                 break;
         }
@@ -317,6 +358,7 @@ final class CreateCommand extends BaseCommand implements Listener {
 
         Player player = event.getPlayer();
         if (this.creating.remove(player.getUniqueId()) != null) {
+            MultiLib.notify("images:removefromcreating", player.getUniqueId().toString());
             player.sendMessage("§cCreation cancelled");
         }
     }
@@ -374,6 +416,10 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return null;
             }
         }
+    }
+
+    private static class ExternalCreateImageTask {
+        // Empty
     }
 
     private ProtectedRegion getRegion(Location location) {
