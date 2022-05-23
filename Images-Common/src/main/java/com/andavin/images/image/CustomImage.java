@@ -146,6 +146,10 @@ public class CustomImage implements Serializable {
         return direction;
     }
 
+    public Collection<CustomImageSection> getSections() {
+        return sections.values();
+    }
+
     /**
      * Get the {@link CustomImageSection} that has the
      * entity item frame ID in this image.
