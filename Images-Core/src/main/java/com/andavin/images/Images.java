@@ -52,6 +52,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import static com.andavin.reflect.Reflection.setFieldValue;
@@ -98,7 +99,7 @@ public class Images extends JavaPlugin implements Listener {
     private static File imagesDirectory;
     private static DataManager dataManager;
     private static final List<CustomImage> IMAGES = new ArrayList<>();
-    private static final Map<UUID, Long> LAST_MOVE_TIMES = new HashMap<>();
+    private static final Map<UUID, Long> LAST_MOVE_TIMES = new ConcurrentHashMap<>();
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
     private static final Map<UUID, ImageListener> LISTENER_TASKS = new HashMap<>(4);
     private static final Map<UUID, ImageListener> LISTENER_TASKS_ALWAYS = new HashMap<>();
@@ -271,6 +272,8 @@ public class Images extends JavaPlugin implements Listener {
                 image.remove(player, false);
             }
         });
+
+        LAST_MOVE_TIMES.remove(player.getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
