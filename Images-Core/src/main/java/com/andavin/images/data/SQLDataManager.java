@@ -70,6 +70,8 @@ abstract class SQLDataManager implements DataManager {
                     CustomImage image = toImage(result.getBytes("data"));
                     image.setId(result.getInt("id"));
                     images.add(image);
+                    if(image.updateTokenId())
+                        save(image);
                 }
             }
         } catch (SQLException e) {

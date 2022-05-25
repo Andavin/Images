@@ -51,6 +51,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -207,16 +208,12 @@ public class Images extends JavaPlugin implements Listener {
         MultiLib.onString(this, "images:deleteimage", string -> {
             String[] args = string.split("\t");
             String contract = args[0];
-            int tokenId = Integer.parseInt(args[1]);
+            BigInteger tokenId = new BigInteger(args[1]);
             Scheduler.async(() -> {
-                synchronized (IMAGES) {
-                    for (CustomImage image : IMAGES) {
-                        if (contract.equals(image.getContract()) && tokenId == image.getTokenId()) {
-                            removeImage(image);
-                            image.destroy();
-                            return;
-                        }
-                    }
+                CustomImage image = getImage(contract, tokenId);
+                if(image != null) {
+                    removeImage(image);
+                    image.destroy();
                 }
             });
         });
@@ -428,8 +425,12 @@ public class Images extends JavaPlugin implements Listener {
     }
 
     public static void removeListenerTaskAlawys(Player player) {
-        if(LISTENER_TASKS_ALWAYS.containsKey(player.getUniqueId()))
+        if (LISTENER_TASKS_ALWAYS.containsKey(player.getUniqueId()))
             LISTENER_TASKS_ALWAYS.remove(LISTENER_TASKS_ALWAYS.get(player.getUniqueId()));
+    }
+
+    public static void save(CustomImage image) {
+        dataManager.save(image);
     }
 
     /**
@@ -495,14 +496,14 @@ public class Images extends JavaPlugin implements Listener {
         }
     }
 
-    public static CustomImage getImage(String contract, int tokenId) {
+    public static CustomImage getImage(String contract, BigInteger tokenId) {
         CustomImage[] images;
         synchronized (IMAGES) {
             images = IMAGES.toArray(EMPTY_IMAGES_ARRAY);
         }
 
         for (CustomImage image : images) {
-            if(image.getContract() != null && image.getContract().equals(contract) && image.getTokenId() == tokenId) {
+            if(image.getContract() != null && image.getContract().equals(contract) && image.getTokenId().equals(tokenId)) {
                 return image;
             }
         }

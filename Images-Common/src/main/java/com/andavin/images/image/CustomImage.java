@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -60,25 +61,38 @@ public class CustomImage implements Serializable {
     private final UUID creator;
     private final UUID uuid;
     private final String contract;
-    private final int tokenId;
+    @Deprecated
+    private int tokenId;
+    private BigInteger newTokenId;
     private final String imageName;
     private final BlockFace direction;
     private final Map<Integer, CustomImageSection> sections = new HashMap<>();
 
-    public CustomImage(String imageName, String contract, int tokenId, Location location, BlockFace direction, BufferedImage image) {
-        this(UNKNOWN_CREATOR, contract, tokenId, imageName, location, direction, image);
+    public CustomImage(String imageName, String contract, int tokenId, BigInteger newTokenId, Location location, BlockFace direction, BufferedImage image) {
+        this(UNKNOWN_CREATOR, contract, tokenId, newTokenId, imageName, location, direction, image);
     }
 
-    public CustomImage(UUID creator, String contract, int tokenId, String imageName, Location location,
+    public CustomImage(UUID creator, String contract, int tokenId, BigInteger newTokenId, String imageName, Location location,
                        BlockFace direction, BufferedImage image) {
         this.contract = contract;
         this.tokenId = tokenId;
+        this.newTokenId = newTokenId;
         this.imageName = imageName;
         this.direction = direction;
         this.location = location;
         this.creator = creator;
         this.uuid = UUID.randomUUID();
         this.update(image);
+
+    }
+
+    public boolean updateTokenId() {
+        if(tokenId != -1) {
+            newTokenId = BigInteger.valueOf(tokenId);
+            tokenId = -1;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -120,8 +134,8 @@ public class CustomImage implements Serializable {
         return contract;
     }
 
-    public int getTokenId() {
-        return tokenId;
+    public BigInteger getTokenId() {
+        return newTokenId;
     }
 
     public Location getLocation() {

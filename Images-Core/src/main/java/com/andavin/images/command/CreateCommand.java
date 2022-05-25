@@ -57,6 +57,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.*;
 import java.util.List;
@@ -119,9 +120,9 @@ final class CreateCommand extends BaseCommand implements Listener {
         ImageSupplier imageSupplier;
         Supplier<String> nameSupplier;
         String address = args[0];
-        int tokenId;
+        BigInteger tokenId;
         try {
-            tokenId = Integer.parseInt(args[1]);
+            tokenId = new BigInteger(args[1]);
         } catch (NumberFormatException e) {
             player.sendMessage(ChatColor.RED + "Token ID must be a number!");
             return;
@@ -271,7 +272,7 @@ final class CreateCommand extends BaseCommand implements Listener {
                     }
                     player.sendMessage(ChatColor.YELLOW + "Attempting to mint NFT..");
 
-                    CustomImage customImage = new CustomImage(player.getUniqueId(), task.contract, task.tokenId,
+                    CustomImage customImage = new CustomImage(player.getUniqueId(), task.contract, -1, task.tokenId,
                             task.nameSupplier.get(), location, direction, image);
 
                     for (CustomImageSection section : customImage.getSections()) {
@@ -369,9 +370,9 @@ final class CreateCommand extends BaseCommand implements Listener {
         private final ImageSupplier imageSupplier;
         private final Supplier<String> nameSupplier;
         private final String contract;
-        private final int tokenId;
+        private final BigInteger tokenId;
 
-        CreateImageTask(double scale, ImageSupplier supplier, Supplier<String> nameSupplier, String contract, int tokenId) {
+        CreateImageTask(double scale, ImageSupplier supplier, Supplier<String> nameSupplier, String contract, BigInteger tokenId) {
             checkArgument(scale > 0,
                     "§cScale must be greater than zero§f %s", scale);
             this.scale = scale;

@@ -39,6 +39,7 @@ import org.bukkit.entity.ItemFrame;
 import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -115,7 +116,7 @@ public final class LegacyImportManager {
 
                 Logger.info("Importing legacy image {} facing {}...", file.getName(), direction);
                 try {
-                    CustomImage image = new CustomImage(file.getName(), "", -1, legacyImage.getLocation(),
+                    CustomImage image = new CustomImage(file.getName(), "", -1, BigInteger.valueOf(-1), legacyImage.getLocation(),
                             direction, ImageIO.read(file));
                     dataManager.save(image);
                     importedImages.add(image);
