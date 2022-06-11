@@ -24,6 +24,7 @@
 package com.andavin.images.v1_18_R1;
 
 import com.andavin.images.image.CustomImageSection;
+import com.andavin.reflect.FieldMatcher;
 import com.andavin.util.Logger;
 import com.andavin.util.Scheduler;
 import net.minecraft.nbt.CompoundTag;
@@ -52,7 +53,7 @@ import static com.andavin.reflect.Reflection.getFieldValue;
  */
 class PacketListener extends com.andavin.images.PacketListener<ServerboundInteractPacket, ServerboundSetCreativeModeSlotPacket> {
 
-    private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, "a");
+    private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, new FieldMatcher(int.class));
 
     @Override
     protected void setEntityListener(Player player, ImageListener listener) {
