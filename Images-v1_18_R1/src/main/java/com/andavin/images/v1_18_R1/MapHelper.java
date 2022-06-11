@@ -64,7 +64,7 @@ import static java.util.Collections.emptyList;
  */
 class MapHelper extends com.andavin.images.MapHelper {
 
-    static final int DEFAULT_STARTING_ID = 8000;
+    static final int DEFAULT_STARTING_ID = 1_000_000;
     private static final Map<UUID, AtomicInteger> MAP_IDS = new HashMap<>(4);
     private static final EntityDataAccessor<Integer> ROTATION = getFieldValue(
             findField(ItemFrame.class, 1, new FieldMatcher(EntityDataAccessor.class)

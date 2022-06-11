@@ -51,7 +51,7 @@ import static java.util.Collections.emptyList;
  */
 class MapHelper extends com.andavin.images.MapHelper {
 
-    static final int DEFAULT_STARTING_ID = 8000;
+    static final int DEFAULT_STARTING_ID = 1_000_000;
     private static final Field ENTITY_ID = findField(Entity.class, "id");
     private static final DataWatcherObject<Integer> ROTATION =
             getFieldValue(EntityItemFrame.class, null, "g");
