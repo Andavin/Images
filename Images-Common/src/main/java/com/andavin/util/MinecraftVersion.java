@@ -141,7 +141,14 @@ public enum MinecraftVersion {
      * This is only the major version of the game while minor
      * versions can be retrieved via the {@link MinorVersion#CURRENT}.
      */
-    v1_18;
+    v1_18,
+
+    /**
+     * The representation of the Minecraft version {@code 1.19}.
+     * This is only the major version of the game while minor
+     * versions can be retrieved via the {@link MinorVersion#CURRENT}.
+     */
+    v1_19;
 
     /**
      * The current {@link MinecraftVersion} of this server.
