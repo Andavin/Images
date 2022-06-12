@@ -28,15 +28,11 @@ import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-import java.util.UUID;
-
 /**
  * @since September 23, 2019
  * @author Andavin
  */
 class ActionBarUtil extends com.andavin.util.ActionBarUtil {
-
-    private static final UUID ID = new UUID(0, 0);
 
     @Override
     protected void sendMessage(Player player, String message) {
