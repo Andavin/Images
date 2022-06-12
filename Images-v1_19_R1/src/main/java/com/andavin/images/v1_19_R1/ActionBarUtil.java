@@ -23,6 +23,9 @@
  */
 package com.andavin.images.v1_19_R1;
 
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -37,6 +40,7 @@ class ActionBarUtil extends com.andavin.util.ActionBarUtil {
 
     @Override
     protected void sendMessage(Player player, String message) {
-        player.sendMessage(ID, message);
+        ((CraftPlayer) player).getHandle().connection.send(
+            new ClientboundSystemChatPacket(Component.translatable(message), 2));
     }
 }
