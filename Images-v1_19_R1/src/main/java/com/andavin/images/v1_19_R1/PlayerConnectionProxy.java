@@ -24,12 +24,19 @@
 package com.andavin.images.v1_19_R1;
 
 import com.andavin.images.PacketListener.ImageListener;
+import com.andavin.reflect.FieldMatcher;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_19_R1.CraftServer;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import static com.andavin.reflect.Reflection.*;
 
 /**
  * @since September 21, 2019
@@ -37,6 +44,10 @@ import org.bukkit.craftbukkit.v1_19_R1.CraftServer;
  */
 public class PlayerConnectionProxy extends ServerGamePacketListenerImpl {
 
+    private static final Field AWAITING_TELEPORT = findField(ServerGamePacketListenerImpl.class, 3,
+            new FieldMatcher(int.class).disallow(Modifier.STATIC));
+    private static final Field AWAITING_POSITION_FROM_CLIENT = findField(ServerGamePacketListenerImpl.class,
+            new FieldMatcher(Vec3.class));
     private final ImageListener listener;
     private final PacketListener packetListener;
 
@@ -45,6 +56,8 @@ public class PlayerConnectionProxy extends ServerGamePacketListenerImpl {
         super(((CraftServer) Bukkit.getServer()).getServer(), connection.connection, connection.player);
         this.listener = listener;
         this.packetListener = packetListener;
+        setFieldValue(AWAITING_TELEPORT, this, getFieldValue(AWAITING_TELEPORT, connection));
+        setFieldValue(AWAITING_POSITION_FROM_CLIENT, this, getFieldValue(AWAITING_POSITION_FROM_CLIENT, connection));
     }
 
     @Override
