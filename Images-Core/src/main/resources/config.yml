@@ -11,6 +11,12 @@
 # NOTE: only supported in 1.16+
 invisible-frames: true
 
+# Image sections within this range will be visible to players
+show-distance: 64
+
+# Image sections beyond this range will be hidden from players
+hide-distance: 128
+
 database:
   # The type of database that can be used
   # Options: MYSQL, SQLITE, FILE - Default: SQLITE

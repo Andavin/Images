@@ -171,9 +171,9 @@ public class CustomImage implements Serializable {
             if (sameWorld) {
 
                 double distance = section.getLocation().distanceSquared(location);
-                if (distance <= 64 * 64) {
+                if (distance <= MapHelper.showDistance * MapHelper.showDistance) {
                     section.show(player);
-                } else if (distance > 128 * 128) {
+                } else if (distance > MapHelper.hideDistance * MapHelper.hideDistance) {
                     section.hide(player);
                 }
             } else {
