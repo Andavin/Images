@@ -77,7 +77,7 @@ public class Images extends JavaPlugin implements Listener {
      *     byte array format would probably be a nice update.
      *
      *  3. Proxy/multi-server setups are not very well supported.
-     *     Each server needs to store it's only images. Therefore, if
+     *     Each server needs to store its only images. Therefore, if
      *     a shared MySQL server is used, for instance, then the images
      *     will most likely be duplicated across all servers where
      *     they don't belong.
