@@ -63,7 +63,8 @@ public final class TransferCommand extends BaseCommand {
                         config.getInt("database.port"),
                         config.getString("database.schema"),
                         config.getString("database.user"),
-                        config.getString("database.password")
+                        config.getString("database.password"),
+                        config.getString("database.useSSL")
                 );
 
                 break;

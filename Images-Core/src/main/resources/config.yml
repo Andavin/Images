@@ -34,6 +34,8 @@ database:
   # If the database needs to be initialized (e.g. the tables created etc.)
   # Unless you manually manage your database you probably won't need to touch this
   initialize: true
+  # use SSL or not
+  useSSL: false
 
 permissions:
 

@@ -132,7 +132,8 @@ public class Images extends JavaPlugin implements Listener {
                         config.getInt("database.port"),
                         config.getString("database.schema"),
                         config.getString("database.user"),
-                        config.getString("database.password")
+                        config.getString("database.password"),
+                        config.getString("database.useSSL")
                 );
                 break;
             case "SQLITE":
