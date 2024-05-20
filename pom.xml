@@ -6,7 +6,7 @@
 
     <groupId>com.andavin</groupId>
     <artifactId>images-parent</artifactId>
-    <version>2.3.2</version>
+    <version>2.3.3</version>
     <modules>
         <module>Images-Core</module>
         <module>Images-Common</module>
@@ -29,6 +29,7 @@
         <module>Images-v1_20_R1</module>
         <module>Images-v1_20_R2</module>
         <module>Images-v1_20_R3</module>
+        <module>Images-v1_20_R4</module>
     </modules>
     <packaging>pom</packaging>
 
