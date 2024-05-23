@@ -100,6 +100,11 @@ public class Images extends JavaPlugin implements Listener {
     @Override
     public void onLoad() {
         instance = this;
+        this.getLogger().info("PACKAGE:" + Versioned.PACKAGE);
+        this.getLogger().info("VERSION_PREFIX:" + Versioned.VERSION_PREFIX);
+        this.getLogger().info("getBukkitVersion:" + Bukkit.getServer().getBukkitVersion());
+        this.getLogger().info("getPackage:" + Bukkit.getServer().getClass().getPackage().getName());
+        this.getLogger().info("version :" + Bukkit.getServer().getClass().getPackage().getName().substring(Bukkit.getServer().getClass().getPackage().getName().lastIndexOf('.') + 1));
         Logger.initialize(this.getLogger());
         imagesDirectory = this.getDataFolder();
         PacketListener.getImages = () -> IMAGES;
@@ -109,7 +114,6 @@ public class Images extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-
         this.saveDefaultConfig();
         Bukkit.getPluginManager().registerEvents(this, this);
 

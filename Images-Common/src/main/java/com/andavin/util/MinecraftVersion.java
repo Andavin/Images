@@ -165,7 +165,15 @@ public enum MinecraftVersion {
     static {
 
         String name = Bukkit.getServer().getClass().getPackage().getName();
+//        String craftBukkitPackage = Bukkit.getServer().getClass().getPackage().getName();
+//        String version = craftBukkitPackage.substring(craftBukkitPackage.lastIndexOf('.') + 1);
         String versionString = name.substring("org.bukkit.craftbukkit.".length(), name.lastIndexOf("_R"));
+//        String versionString = name.substring("org.bukkit.craftbukkit.".length(), name.lastIndexOf("_R");
+//        String craftBukkitPackage = Bukkit.getServer().getClass().getPackage().getName();
+
+//        String versionString = craftBukkitPackage.substring(craftBukkitPackage.lastIndexOf('.') + 1);
+//        String versionString = ();
+
         try {
             CURRENT = MinecraftVersion.valueOf(versionString);
         } catch (RuntimeException e) {
