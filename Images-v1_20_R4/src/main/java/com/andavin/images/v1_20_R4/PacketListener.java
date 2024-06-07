@@ -58,7 +58,7 @@ class PacketListener extends com.andavin.images.PacketListener<ServerboundIntera
 
     private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, new FieldMatcher(int.class));
     private static final Field CONNECTION = findField(ServerCommonPacketListenerImpl.class, new FieldMatcher(Connection.class));
-    private static final Field LISTENER = findField(Connection.class, new FieldMatcher(net.minecraft.network.PacketListener.class));
+    private static final Field LISTENER = findField(Connection.class, 1, new FieldMatcher(net.minecraft.network.PacketListener.class));
 
     @Override
     protected void setEntityListener(Player player, ImageListener listener) {
