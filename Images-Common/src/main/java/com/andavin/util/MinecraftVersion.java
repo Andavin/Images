@@ -158,7 +158,14 @@ public enum MinecraftVersion {
      * This is only the major version of the game while minor
      * versions can be retrieved via the {@link MinorVersion#CURRENT}.
      */
-    v1_20;
+    v1_20,
+
+    /**
+     * The representation of the Minecraft version {@code 1.20}.
+     * This is only the major version of the game while minor
+     * versions can be retrieved via the {@link MinorVersion#CURRENT}.
+     */
+    v1_21;
 
     /**
      * The current {@link MinecraftVersion} of this server.
@@ -387,6 +394,7 @@ public enum MinecraftVersion {
             minorMap.put("1.20.4", "R3");
             minorMap.put("1.20.5", "R4");
             minorMap.put("1.20.6", "R4");
+            minorMap.put("1.21", "R1");
 
             return minorMap.getOrDefault(minecraftVersion, minecraftVersion);
         }
