@@ -177,7 +177,12 @@ public enum MinecraftVersion {
 
         if (isPaperFork()) {
             String minecraftVersion = Bukkit.getServer().getMinecraftVersion();
-            versionString = "v" + minecraftVersion.substring(0, minecraftVersion.indexOf('.', minecraftVersion.indexOf('.') + 1)).replace('.', '_');
+//            versionString = "v" + minecraftVersion.substring(0, minecraftVersion.indexOf('.', minecraftVersion.indexOf('.') + 1)).replace('.', '_');
+            if(minecraftVersion.length() > 4 ) {
+                versionString = "v" + minecraftVersion.substring(0, minecraftVersion.indexOf('.', minecraftVersion.indexOf('.') + 1)).replace('.', '_');
+            } else {
+                versionString = "v" + minecraftVersion.replace('.', '_');
+            }
         } else {
             String name = Bukkit.getServer().getClass().getPackage().getName();
             versionString = name.substring("org.bukkit.craftbukkit.".length(), name.lastIndexOf("_R"));
