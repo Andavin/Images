@@ -25,7 +25,9 @@ package com.andavin.util;
 
 import com.andavin.reflect.Reflection;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 
 import static com.andavin.reflect.Reflection.findClass;
 
@@ -171,8 +173,7 @@ public enum MinecraftVersion {
 
     static {
 
-        String name = Bukkit.getServer().getClass().getPackage().getName();
-        String versionString = name.substring("org.bukkit.craftbukkit.".length(), name.lastIndexOf("_R"));
+        String versionString = findMajorVersion();
         try {
             CURRENT = MinecraftVersion.valueOf(versionString);
         } catch (RuntimeException e) {
@@ -303,6 +304,21 @@ public enum MinecraftVersion {
         return FULL_VERSION;
     }
 
+    private static String findMajorVersion() {
+
+        Server server = Bukkit.getServer();
+        String packageName = server.getClass().getPackage().getName();
+        int minorIndex = packageName.lastIndexOf("_R");
+        if (minorIndex != -1) {
+            return packageName.substring("org.bukkit.craftbukkit.".length(), packageName.lastIndexOf("_R"));
+        }
+
+        String bukkitVersion = server.getBukkitVersion();
+        String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+        String[] versionParts = StringUtils.split(version, '.');
+        return 'v' + versionParts[0] + '_' + versionParts[1];
+    }
+
     /**
      * A class that represents the minor version for the Bukkit
      * version barrier. For example, Minecraft {@code 1.7.10} is
@@ -324,12 +340,34 @@ public enum MinecraftVersion {
 
         static {
 
-            String name = Bukkit.getServer().getClass().getPackage().getName();
-            String versionString = name.substring(name.indexOf('R'));
+            String versionString = findMinorVersion();
             try {
                 CURRENT = MinorVersion.valueOf(versionString);
             } catch (RuntimeException e) {
                 throw new UnsupportedOperationException("Minor version " + versionString + " is not supported.", e);
+            }
+        }
+
+        private static String findMinorVersion() {
+
+            Server server = Bukkit.getServer();
+            String packageName = server.getClass().getPackage().getName();
+            int minorIndex = packageName.indexOf("R");
+            if (minorIndex != -1) {
+                return packageName.substring(minorIndex);
+            }
+
+            String bukkitVersion = server.getBukkitVersion();
+            String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+            switch (version) {
+                case "1.20.5":
+                    return "R4";
+                case "1.20.6":
+                    return "R5";
+                case "1.21":
+                    return "R1";
+                default:
+                    throw new UnsupportedOperationException("unknown minor version for " + version);
             }
         }
     }
