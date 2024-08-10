@@ -89,8 +89,9 @@ class MapHelper extends com.andavin.images.MapHelper {
     protected void createMap(int frameId, int mapId, Player player, Location location,
                              BlockFace direction, int rotation, byte[] pixels) {
 
+        MapId mapIdObj = new MapId(mapId);
         ItemStack item = new ItemStack(Items.FILLED_MAP);
-        item.set(DataComponents.MAP_ID, new MapId(mapId));
+        item.set(DataComponents.MAP_ID, mapIdObj);
 
         ItemFrame frame = new ItemFrame(((CraftWorld) player.getWorld()).getHandle(),
                 BlockPos.containing(location.getX(), location.getY(), location.getZ()),
@@ -105,7 +106,7 @@ class MapHelper extends com.andavin.images.MapHelper {
         ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
         connection.send(new ClientboundAddEntityPacket(frame, frame.getDirection().get3DDataValue(), frame.getPos()));
         connection.send(new ClientboundSetEntityDataPacket(frame.getId(), frame.getEntityData().packDirty()));
-        connection.send(new ClientboundMapItemDataPacket(new MapId(mapId), (byte) 3, false,
+        connection.send(new ClientboundMapItemDataPacket(mapIdObj, (byte) 3, false,
                 emptyList(), new MapPatch(0, 0, 128, 128, pixels)));
     }
 

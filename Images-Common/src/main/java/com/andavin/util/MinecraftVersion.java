@@ -25,10 +25,9 @@ package com.andavin.util;
 
 import com.andavin.reflect.Reflection;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.bukkit.Server;
 
 import static com.andavin.reflect.Reflection.findClass;
 
@@ -54,11 +53,11 @@ import static com.andavin.reflect.Reflection.findClass;
  *     MinecraftVersion.greaterThanOrEqual(v1_12_R1); // If this version is 1.12.2 or later
  * </pre>
  *
+ * @since November 12, 2018
  * @author Andavin
  * @see Reflection
  * @see #findMcClass(String)
  * @see #findCraftClass(String)
- * @since November 12, 2018
  */
 public enum MinecraftVersion {
 
@@ -161,7 +160,7 @@ public enum MinecraftVersion {
     v1_20,
 
     /**
-     * The representation of the Minecraft version {@code 1.20}.
+     * The representation of the Minecraft version {@code 1.21}.
      * This is only the major version of the game while minor
      * versions can be retrieved via the {@link MinorVersion#CURRENT}.
      */
@@ -173,37 +172,12 @@ public enum MinecraftVersion {
     public static final MinecraftVersion CURRENT;
 
     static {
-        String versionString;
 
-        if (isPaperFork()) {
-            String minecraftVersion = Bukkit.getServer().getMinecraftVersion();
-//            versionString = "v" + minecraftVersion.substring(0, minecraftVersion.indexOf('.', minecraftVersion.indexOf('.') + 1)).replace('.', '_');
-            if(minecraftVersion.length() > 4 ) {
-                versionString = "v" + minecraftVersion.substring(0, minecraftVersion.indexOf('.', minecraftVersion.indexOf('.') + 1)).replace('.', '_');
-            } else {
-                versionString = "v" + minecraftVersion.replace('.', '_');
-            }
-        } else {
-            String name = Bukkit.getServer().getClass().getPackage().getName();
-            versionString = name.substring("org.bukkit.craftbukkit.".length(), name.lastIndexOf("_R"));
-        }
-
+        String versionString = findMajorVersion();
         try {
             CURRENT = MinecraftVersion.valueOf(versionString);
         } catch (RuntimeException e) {
             throw new UnsupportedOperationException("Version " + versionString + " is not supported.", e);
-        }
-    }
-
-    /**
-     * Tell if the  current server is a Paper Fork or not.
-     */
-    public static Boolean isPaperFork() {
-        try {
-            Class.forName("com.destroystokyo.paper.ParticleBuilder");
-            return true;
-        } catch (ClassNotFoundException ignored) {
-            return false;
         }
     }
 
@@ -330,6 +304,21 @@ public enum MinecraftVersion {
         return FULL_VERSION;
     }
 
+    private static String findMajorVersion() {
+
+        Server server = Bukkit.getServer();
+        String packageName = server.getClass().getPackage().getName();
+        int minorIndex = packageName.lastIndexOf("_R");
+        if (minorIndex != -1) {
+            return packageName.substring("org.bukkit.craftbukkit.".length(), packageName.lastIndexOf("_R"));
+        }
+
+        String bukkitVersion = server.getBukkitVersion();
+        String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+        String[] versionParts = StringUtils.split(version, '.');
+        return 'v' + versionParts[0] + '_' + versionParts[1];
+    }
+
     /**
      * A class that represents the minor version for the Bukkit
      * version barrier. For example, Minecraft {@code 1.7.10} is
@@ -349,74 +338,36 @@ public enum MinecraftVersion {
          */
         public static final MinorVersion CURRENT;
 
-        public static String getVersionString(String minecraftVersion) {
-            Map<String, String> minorMap = new HashMap<>();
-
-            minorMap.put("1.8.4", "R3");
-            minorMap.put("1.8.5", "R3");
-            minorMap.put("1.8.6", "R3");
-            minorMap.put("1.8.7", "R3");
-            minorMap.put("1.8.8", "R3");
-            minorMap.put("1.9.4", "R2");
-            minorMap.put("1.10.0", "R1");
-            minorMap.put("1.10.2", "R1");
-            minorMap.put("1.11.0", "R1");
-            minorMap.put("1.11.1", "R1");
-            minorMap.put("1.11.2", "R1");
-            minorMap.put("1.12.0", "R1");
-            minorMap.put("1.12.1", "R1");
-            minorMap.put("1.12.2", "R1");
-            minorMap.put("1.13.1", "R2");
-            minorMap.put("1.13.2", "R2");
-            minorMap.put("1.14.0", "R1");
-            minorMap.put("1.14.1", "R1");
-            minorMap.put("1.14.2", "R1");
-            minorMap.put("1.14.3", "R1");
-            minorMap.put("1.14.4", "R1");
-            minorMap.put("1.15.0", "R1");
-            minorMap.put("1.15.1", "R1");
-            minorMap.put("1.15.2", "R1");
-            minorMap.put("1.16.0", "R1");
-            minorMap.put("1.16.1", "R1");
-            minorMap.put("1.16.2", "R2");
-            minorMap.put("1.16.3", "R2");
-            minorMap.put("1.16.4", "R3");
-            minorMap.put("1.16.5", "R3");
-            minorMap.put("1.17.0", "R1");
-            minorMap.put("1.17.1", "R1");
-            minorMap.put("1.18.0", "R1");
-            minorMap.put("1.18.1", "R1");
-            minorMap.put("1.18.2", "R2");
-            minorMap.put("1.19.0", "R1");
-            minorMap.put("1.19.1", "R1");
-            minorMap.put("1.19.2", "R1");
-            minorMap.put("1.19.3", "R2");
-            minorMap.put("1.19.4", "R3");
-            minorMap.put("1.20.0", "R1");
-            minorMap.put("1.20.1", "R1");
-            minorMap.put("1.20.2", "R2");
-            minorMap.put("1.20.3", "R3");
-            minorMap.put("1.20.4", "R3");
-            minorMap.put("1.20.5", "R4");
-            minorMap.put("1.20.6", "R4");
-            minorMap.put("1.21", "R1");
-
-            return minorMap.getOrDefault(minecraftVersion, minecraftVersion);
-        }
         static {
-            String versionString;
 
-            if (isPaperFork()) {
-                String minecraftVersion = Bukkit.getServer().getMinecraftVersion();
-                versionString = getVersionString(minecraftVersion);
-            } else {
-                String name = Bukkit.getServer().getClass().getPackage().getName();
-                versionString = name.substring(name.indexOf('R'));
-            }
+            String versionString = findMinorVersion();
             try {
                 CURRENT = MinorVersion.valueOf(versionString);
             } catch (RuntimeException e) {
                 throw new UnsupportedOperationException("Minor version " + versionString + " is not supported.", e);
+            }
+        }
+
+        private static String findMinorVersion() {
+
+            Server server = Bukkit.getServer();
+            String packageName = server.getClass().getPackage().getName();
+            int minorIndex = packageName.indexOf("R");
+            if (minorIndex != -1) {
+                return packageName.substring(minorIndex);
+            }
+
+            String bukkitVersion = server.getBukkitVersion();
+            String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+            switch (version) {
+                case "1.20.5":
+                    return "R4";
+                case "1.20.6":
+                    return "R5";
+                case "1.21":
+                    return "R1";
+                default:
+                    throw new UnsupportedOperationException("unknown minor version for " + version);
             }
         }
     }
