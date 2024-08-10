@@ -366,6 +366,8 @@ public enum MinecraftVersion {
                     return "R5";
                 case "1.21":
                     return "R1";
+                case "1.21.1":
+                    return "R1";
                 default:
                     throw new UnsupportedOperationException("unknown minor version for " + version);
             }
