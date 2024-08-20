@@ -358,15 +358,35 @@ public enum MinecraftVersion {
             }
 
             String bukkitVersion = server.getBukkitVersion();
-            String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+            return matchVersion(bukkitVersion.substring(0, bukkitVersion.indexOf('-')));
+        }
+
+        private static String matchVersion(String version) {
             switch (version) {
                 case "1.20.5":
                     return "R4";
                 case "1.20.6":
                     return "R5";
                 case "1.21":
+                case "1.21.1":
                     return "R1";
                 default:
+                    // NOTE: for future compatibility, we will default to the last version minor version
+                    // This will definitely have issues on certain versions, but it will save others
+                    int lastDot = version.lastIndexOf('.');
+                    if (lastDot != version.indexOf('.')) { // Has at least 2 dots in the version
+                        String patch = version.substring(lastDot + 1);
+                        if (StringUtils.isNumeric(patch)) {
+                            int previousPatch = Integer.parseInt(patch) - 1;
+                            String previousVersion = previousPatch == 0 ?
+                                    version.substring(0, lastDot) :
+                                    version.substring(0, lastDot + 1) + previousPatch;
+                            Logger.warn("Unknown minor version for " + version +
+                                    " using " + previousVersion + ". Report this if you have issues.");
+                            return matchVersion(previousVersion);
+                        }
+                    }
+
                     throw new UnsupportedOperationException("unknown minor version for " + version);
             }
         }
