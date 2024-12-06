@@ -363,15 +363,17 @@ public enum MinecraftVersion {
 
         private static String matchVersion(String version) {
             switch (version) {
-                case "1.20.5":
-                    return "R4";
-                case "1.20.6":
-                    return "R5";
                 case "1.21":
                 case "1.21.1":
                     return "R1";
                 case "1.21.3":
                     return "R2";
+                case "1.21.4":
+                    return "R3";
+                case "1.20.5":
+                    return "R4";
+                case "1.20.6":
+                    return "R5";
                 default:
                     // NOTE: for future compatibility, we will default to the last version minor version
                     // This will definitely have issues on certain versions, but it will save others
