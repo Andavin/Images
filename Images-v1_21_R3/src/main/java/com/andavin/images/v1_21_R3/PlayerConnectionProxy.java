@@ -25,17 +25,20 @@ package com.andavin.images.v1_21_R3;
 
 import com.andavin.images.PacketListener.ImageListener;
 import com.andavin.reflect.FieldMatcher;
+import com.andavin.reflect.MethodMatcher;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
-import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
+import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.bukkit.Bukkit;
 import org.bukkit.craftbukkit.v1_21_R3.CraftServer;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import static com.andavin.reflect.Reflection.*;
@@ -50,6 +53,10 @@ public class PlayerConnectionProxy extends ServerGamePacketListenerImpl {
             new FieldMatcher(int.class).disallow(Modifier.STATIC));
     private static final Field AWAITING_POSITION_FROM_CLIENT = findField(ServerGamePacketListenerImpl.class,
             new FieldMatcher(Vec3.class));
+    private static final Method TRY_PICK_ITEM = findMethod(ServerGamePacketListenerImpl.class,
+            new MethodMatcher(void.class, ItemStack.class));
+
+    private long lastInteract;
     private final ImageListener listener;
     private final PacketListener packetListener;
 
@@ -75,8 +82,18 @@ public class PlayerConnectionProxy extends ServerGamePacketListenerImpl {
     }
 
     @Override
-    public void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket packet) {
-        packetListener.handle(player.getBukkitEntity(), packet);
-        super.handleSetCreativeModeSlot(packet);
+    public void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket packet) {
+
+        long now = System.currentTimeMillis();
+        if (now - lastInteract > 10) {
+            lastInteract = now;
+            packetListener.handle(player.getBukkitEntity(), packet);
+        }
+
+        super.handlePickItemFromEntity(packet);
+    }
+
+    void tryPickItem(ItemStack item) { // Access to the private method
+        invokeMethod(TRY_PICK_ITEM, this, item);
     }
 }

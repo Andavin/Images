@@ -98,6 +98,32 @@ public abstract class PacketListener<T, U> implements Versioned {
     }
 
     /**
+     * Get the {@link CustomImageSection} that has the
+     * frame ID from an {@link CustomImage}.
+     *
+     * @param frameId The entity ID to get the section for.
+     * @return The section or {@code null} if the
+     *         section is not found.
+     */
+    public static CustomImageSection getImageSectionByEntityId(int frameId) {
+
+        List<CustomImage> images = getImages.get();
+        //noinspection SynchronizationOnLocalVariableOrMethodParameter
+        synchronized (images) {
+
+            for (CustomImage image : images) {
+
+                CustomImageSection section = image.getSection(frameId);
+                if (section != null) {
+                    return section;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /**
      * Call the given listener for the player.
      *
      * @param player The player that interacted.
