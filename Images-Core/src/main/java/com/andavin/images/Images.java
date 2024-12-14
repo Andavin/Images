@@ -112,15 +112,20 @@ public class Images extends JavaPlugin implements Listener {
 
         this.saveDefaultConfig();
         Bukkit.getPluginManager().registerEvents(this, this);
+        FileConfiguration config = this.getConfig();
 
         Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
         if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
-            this.protocolLib = true;
-            Logger.info("ProtocolLib detected. Enabling generic packet handling...");
-            ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
+            Logger.info("ProtocolLib detected. can enabling generic packet handling...");
+            if(config.getBoolean("use-protocollib", true)) {
+                Logger.info("ProtocolLib activated. Generic packet handling enabled");
+                this.protocolLib = true;
+                ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
+            } else {
+                this.protocolLib = false;
+            }
         }
 
-        FileConfiguration config = this.getConfig();
         MapHelper.invisible = config.getBoolean("invisible-frames", true);
         MapHelper.showDistance = config.getInt("show-distance", 64);
         MapHelper.hideDistance = config.getInt("hide-distance", 128);

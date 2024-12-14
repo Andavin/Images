@@ -17,6 +17,9 @@ show-distance: 64
 # Image sections beyond this range will be hidden from players
 hide-distance: 128
 
+# ProtocolLib should be used if it is found
+use-protocollib: true
+
 database:
   # The type of database that can be used
   # Options: MYSQL, SQLITE, FILE - Default: SQLITE
