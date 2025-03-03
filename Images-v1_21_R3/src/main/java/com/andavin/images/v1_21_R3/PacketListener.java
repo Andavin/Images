@@ -28,6 +28,8 @@ import com.andavin.reflect.FieldMatcher;
 import com.andavin.util.Scheduler;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerGamePacketListener;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket.Handler;
 import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
@@ -53,7 +55,7 @@ import static com.andavin.reflect.Reflection.*;
  * @since March 19, 2023
  * @author Andavin
  */
-class PacketListener extends com.andavin.images.PacketListener<ServerboundInteractPacket, ServerboundPickItemFromEntityPacket> {
+class PacketListener extends com.andavin.images.PacketListener<ServerboundInteractPacket, Packet<ServerGamePacketListener>> {
 
     private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, new FieldMatcher(int.class));
     private static final Field CONNECTION = findField(ServerCommonPacketListenerImpl.class, new FieldMatcher(Connection.class));
@@ -93,9 +95,12 @@ class PacketListener extends com.andavin.images.PacketListener<ServerboundIntera
     }
 
     @Override
-    protected void handle(Player player, ServerboundPickItemFromEntityPacket packet) {
+    protected void handle(Player player, Packet<ServerGamePacketListener> packet) {
+        if(!(packet instanceof ServerboundPickItemFromEntityPacket)) {
+            return;
+        }
 
-        CustomImageSection section = getImageSectionByEntityId(packet.id());
+        CustomImageSection section = getImageSectionByEntityId(((ServerboundPickItemFromEntityPacket) packet).id());
         if (section == null) {
             return;
         }
