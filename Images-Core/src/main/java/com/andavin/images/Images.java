@@ -30,10 +30,7 @@ import com.andavin.images.data.FileDataManager;
 import com.andavin.images.data.MySQLDataManager;
 import com.andavin.images.data.SQLiteDataManager;
 import com.andavin.images.image.CustomImage;
-import com.andavin.util.LocationUtil;
-import com.andavin.util.Logger;
-import com.andavin.util.Scheduler;
-import com.andavin.util.TimeoutMetadata;
+import com.andavin.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -112,6 +109,9 @@ public class Images extends JavaPlugin implements Listener {
 
         this.saveDefaultConfig();
         Bukkit.getPluginManager().registerEvents(this, this);
+        if (MinecraftVersion.isPaper()) {
+            Logger.info("PaperMC server detected. Adjustments will be made to accommodate...");
+        }
 
         Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
         if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
@@ -192,13 +192,23 @@ public class Images extends JavaPlugin implements Listener {
             return;
         }
 
-        BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
+        Runnable intercept = () -> {
+            BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
-            ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
-            if (listener != null) {
-                listener.click(clicker, image, section, action, hand);
-            }
-        });
+                ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
+                if (listener != null) {
+                    listener.click(clicker, image, section, action, hand);
+                }
+            });
+        };
+        // If we're using Paper, attempt to delay the entity listener to prevent
+        // a bug where the server does not track accurate movement after the replacement
+        if (MinecraftVersion.isPaper() && MinecraftVersion.greaterThan(MinecraftVersion.v1_20)) {
+            Scheduler.later(intercept, 20L);
+        } else {
+            intercept.run();
+        }
+
     }
 
     @EventHandler

@@ -25,6 +25,7 @@ package com.andavin.util;
 
 import com.andavin.reflect.Reflection;
 import com.andavin.reflect.exception.UncheckedClassNotFoundException;
+import com.andavin.reflect.exception.UncheckedNoSuchMethodException;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -170,15 +171,36 @@ public enum MinecraftVersion {
      * The current {@link MinecraftVersion} of this server.
      */
     public static final MinecraftVersion CURRENT;
+    private static final boolean PAPER;
 
     static {
 
+        boolean isPaper = false;
+        try {
+            Reflection.findMethod(Bukkit.class, "getMinecraftVersion");
+            isPaper = true;
+        } catch (UncheckedNoSuchMethodException ignored) {
+        }
+
+        PAPER = isPaper;
         String versionString = findMajorVersion();
         try {
             CURRENT = MinecraftVersion.valueOf(versionString);
         } catch (RuntimeException e) {
             throw new UnsupportedOperationException("Version " + versionString + " is not supported.", e);
         }
+    }
+
+    /**
+     * Determine if this server is running a version of PaperMC.
+     * <p>
+     * This is determined on a best-effort basis, by checking for the presence
+     * of methods that PaperMC has implemented in addition to SpigotMC.
+     *
+     * @return If this server is running PaperMC.
+     */
+    public static boolean isPaper() {
+        return PAPER;
     }
 
     /**
