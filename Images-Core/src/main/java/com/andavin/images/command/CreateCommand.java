@@ -69,7 +69,7 @@ final class CreateCommand extends BaseCommand implements Listener {
         super("create", "images.command.create");
         this.setAliases("new", "add", "load");
         this.setMinimumArgs(1);
-        this.setUsage("/image create <image name> [scale percent]");
+        this.setUsage("/image create <image name | URL> [scale percent]");
         this.setDesc("Create and begin pasting a new custom image");
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
     }
