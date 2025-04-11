@@ -112,12 +112,17 @@ public class Images extends JavaPlugin implements Listener {
         if (MinecraftVersion.isPaper()) {
             Logger.info("PaperMC server detected. Adjustments will be made to accommodate...");
         }
+        // After 1.21 ProtocolLib becomes a bit unreliable. I'm disabling it for now until we see a change in updates
+        // The built-in implementation seems to work fine so I don't find it worth it to deal with this at the moment
+        // NOTE: this is specifically for odd errors on startup like them seeming to have removed PacketAdapter
+        if (MinecraftVersion.lessThan(MinecraftVersion.v1_21)) {
 
-        Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
-        if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
-            this.protocolLib = true;
-            Logger.info("ProtocolLib detected. Enabling generic packet handling...");
-            ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
+            Plugin protocolLib = Bukkit.getPluginManager().getPlugin("ProtocolLib");
+            if (protocolLib != null) { // ProtocolLib is present so use it for higher stability
+                this.protocolLib = true;
+                Logger.info("ProtocolLib detected. Enabling generic packet handling...");
+                ProtocolLibListener.register(this, LISTENER_TASKS, BRIDGE);
+            }
         }
 
         FileConfiguration config = this.getConfig();
