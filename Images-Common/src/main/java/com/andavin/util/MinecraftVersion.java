@@ -260,6 +260,29 @@ public enum MinecraftVersion {
     }
 
     /**
+     * Tell if the specified server version is greater than or equal to
+     * (i.e. newer than or the same as) the {@link #CURRENT
+     * current server version}.
+     * <p>
+     * For example, if {@code MinecraftVersion.greaterThanOrEqual(v1_8_R3)}
+     * is {@code true}, then the current server version is {@code 1.8.8}
+     * or a more recent version (usually meaning version compatibility
+     * with {@code 1.8.8}).
+     *
+     * @param version The version to test the current version against.
+     * @return If the version is greater than or equal to the current version.
+     */
+    public static boolean ge(MinecraftVersion version, MinorVersion minorVersion) {
+        if (CURRENT.ordinal() < version.ordinal()) {
+            return false;
+        } else if (CURRENT.ordinal() > version.ordinal()) {
+            return true;
+        } else {
+            return MinorVersion.CURRENT.ordinal() >= minorVersion.ordinal();
+        }
+    }
+
+    /**
      * Get a class in any NMS package omitting the
      * beginning of the canonical name and enter anything
      * following the version package.

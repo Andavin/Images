@@ -24,6 +24,8 @@
 package com.andavin.images;
 
 import com.andavin.images.PacketListener.ImageListener;
+import com.andavin.util.MinecraftVersion;
+import com.andavin.util.MinecraftVersion.MinorVersion;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.PacketType.Play.Client;
 import com.comphenix.protocol.ProtocolLibrary;
@@ -42,9 +44,10 @@ class ProtocolLibListener<T, U> extends PacketAdapter {
 
     private final ImageListener listener;
     private final PacketListener packetListener;
+    private final PacketType pickItemType = findPickItemType();
 
     ProtocolLibListener(Plugin plugin, ImageListener listener, PacketListener packetListener) {
-        super(plugin, Client.USE_ENTITY, Client.SET_CREATIVE_SLOT);
+        super(plugin, Client.USE_ENTITY, findPickItemType());
         this.listener = listener;
         this.packetListener = packetListener;
     }
@@ -56,7 +59,7 @@ class ProtocolLibListener<T, U> extends PacketAdapter {
         if (type == Client.USE_ENTITY) {
             packetListener.handle(event.getPlayer(), listener,
                     event.getPacket().getHandle());
-        } else if (type == Client.SET_CREATIVE_SLOT) {
+        } else if (type == pickItemType) {
             packetListener.handle(event.getPlayer(),
                     event.getPacket().getHandle());
         }
@@ -82,5 +85,10 @@ class ProtocolLibListener<T, U> extends PacketAdapter {
                         listener.click(clicker, image, section, action, hand);
                     }
                 }, bridge));
+    }
+
+    private static PacketType findPickItemType() {
+        return MinecraftVersion.ge(MinecraftVersion.v1_21, MinorVersion.R3) ?
+                Client.PICK_ITEM : Client.SET_CREATIVE_SLOT;
     }
 }
