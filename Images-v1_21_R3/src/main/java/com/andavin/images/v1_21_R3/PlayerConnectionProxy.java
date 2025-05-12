@@ -24,76 +24,45 @@
 package com.andavin.images.v1_21_R3;
 
 import com.andavin.images.PacketListener.ImageListener;
-import com.andavin.reflect.FieldMatcher;
-import com.andavin.reflect.MethodMatcher;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPickItemFromEntityPacket;
-import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_21_R3.CraftServer;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import static com.andavin.reflect.Reflection.*;
 
 /**
  * @since March 19, 2023
  * @author Andavin
  */
-public class PlayerConnectionProxy extends ServerGamePacketListenerImpl {
-
-    private static final Field AWAITING_TELEPORT = findField(ServerGamePacketListenerImpl.class, 3,
-            new FieldMatcher(int.class).disallow(Modifier.STATIC));
-    private static final Field AWAITING_POSITION_FROM_CLIENT = findField(ServerGamePacketListenerImpl.class,
-            new FieldMatcher(Vec3.class));
-    private static final Method TRY_PICK_ITEM = findMethod(ServerGamePacketListenerImpl.class,
-            new MethodMatcher(void.class, ItemStack.class));
+public class PlayerConnectionProxy extends ChannelInboundHandlerAdapter {
 
     private long lastInteract;
     private final ImageListener listener;
     private final PacketListener packetListener;
+    private final ServerGamePacketListenerImpl connection;
 
-    PlayerConnectionProxy(ServerGamePacketListenerImpl connection, Connection internal,
-                          ImageListener listener, PacketListener packetListener,
-                          CommonListenerCookie cookie) {
-        super(((CraftServer) Bukkit.getServer()).getServer(), internal, connection.player, cookie);
+    PlayerConnectionProxy(ServerGamePacketListenerImpl connection,
+                          ImageListener listener, PacketListener packetListener) {
+        this.connection = connection;
         this.listener = listener;
         this.packetListener = packetListener;
-        setFieldValue(AWAITING_TELEPORT, this, getFieldValue(AWAITING_TELEPORT, connection));
-        setFieldValue(AWAITING_POSITION_FROM_CLIENT, this, getFieldValue(AWAITING_POSITION_FROM_CLIENT, connection));
     }
 
     @Override
-    public void send(Packet<?> packet) {
-        super.send(packet);
-    }
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        try {
+            if (msg instanceof ServerboundInteractPacket packet) {
+                packetListener.handle(connection.player.getBukkitEntity(), listener, packet);
+            } else if (msg instanceof ServerboundPickItemFromEntityPacket packet) {
 
-    @Override
-    public void handleInteract(ServerboundInteractPacket packet) {
-        packetListener.handle(player.getBukkitEntity(), listener, packet);
-        super.handleInteract(packet);
-    }
-
-    @Override
-    public void handlePickItemFromEntity(ServerboundPickItemFromEntityPacket packet) {
-
-        long now = System.currentTimeMillis();
-        if (now - lastInteract > 10) {
-            lastInteract = now;
-            packetListener.handle(player.getBukkitEntity(), packet);
+                long now = System.currentTimeMillis();
+                if (now - lastInteract > 10) {
+                    lastInteract = now;
+                    packetListener.handle(connection.player.getBukkitEntity(), packet);
+                }
+            }
+        } finally {
+            super.channelRead(ctx, msg);
         }
-
-        super.handlePickItemFromEntity(packet);
-    }
-
-    void tryPickItem(ItemStack item) { // Access to the private method
-        invokeMethod(TRY_PICK_ITEM, this, item);
     }
 }
