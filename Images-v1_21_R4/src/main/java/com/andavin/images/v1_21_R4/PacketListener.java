@@ -26,7 +26,9 @@ package com.andavin.images.v1_21_R4;
 import com.andavin.images.image.CustomImageSection;
 import com.andavin.reflect.FieldMatcher;
 import com.andavin.reflect.MethodMatcher;
+import com.andavin.reflect.exception.UncheckedNoSuchMethodException;
 import com.andavin.util.Scheduler;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -36,6 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
@@ -56,10 +59,22 @@ import static com.andavin.reflect.Reflection.*;
  */
 class PacketListener extends com.andavin.images.PacketListener<ServerboundInteractPacket, ServerboundPickItemFromEntityPacket> {
 
+    private static final Method TRY_PICK_ITEM;
     private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, new FieldMatcher(int.class));
     private static final Field CONNECTION = findField(ServerCommonPacketListenerImpl.class, new FieldMatcher(Connection.class));
-    private static final Method TRY_PICK_ITEM = findMethod(ServerGamePacketListenerImpl.class,
-            new MethodMatcher(void.class, ItemStack.class));
+
+    static {
+        Method tryPickItem = null;
+        try {
+            tryPickItem = findMethod(ServerGamePacketListenerImpl.class,
+                    new MethodMatcher(void.class, ItemStack.class));
+        } catch (UncheckedNoSuchMethodException e) { // Paper modifies the tryPickItem method in 1.21.5
+            tryPickItem = findMethod(ServerGamePacketListenerImpl.class,
+                    new MethodMatcher(void.class, ItemStack.class, BlockPos.class, Entity.class, boolean.class));
+        } finally {
+            TRY_PICK_ITEM = tryPickItem;
+        }
+    }
 
     @Override
     protected void setEntityListener(Player player, ImageListener listener) {
