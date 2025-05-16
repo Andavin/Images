@@ -52,14 +52,11 @@ public class PlayerConnectionProxy extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         try {
             if (msg instanceof ServerboundInteractPacket packet) {
-                System.out.println("Interact packet");
                 packetListener.handle(connection.player.getBukkitEntity(), listener, packet);
             } else if (msg instanceof ServerboundPickItemFromEntityPacket packet) {
-                System.out.println("Pick item packet");
                 long now = System.currentTimeMillis();
                 if (now - lastInteract > 10) {
                     lastInteract = now;
-                    System.out.println("handling Pick item packet");
                     packetListener.handle(connection.player.getBukkitEntity(), packet);
                 }
             }
