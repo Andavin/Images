@@ -42,7 +42,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URI;
+import java.net.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +62,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 final class CreateCommand extends BaseCommand implements Listener {
 
-    private static final Predicate<String> URL_TEST = Pattern.compile("^(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]").asPredicate();
     private final Map<UUID, CreateImageTask> creating = new HashMap<>();
+    private final String[] allowedSchemes = {"http", "https", "ftp", "ftps"};
 
     CreateCommand() {
         super("create", "images.command.create");
@@ -74,13 +74,40 @@ final class CreateCommand extends BaseCommand implements Listener {
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
     }
 
+    /**
+     * Check if the given string is a valid image URL.
+     * This method verifies that the URL is well-formed, uses an allowed scheme
+     * (http, https, ftp, ftps), and does not point to a loopback or local address.
+     *
+     * @param imageNameArg The string to check as a potential image URL.
+     * @return {@code true} if the string is a valid, non-local image URL with an allowed scheme,
+     *         {@code false} otherwise.
+     */
+    private boolean isValidImageURL(String imageNameArg) {
+        try {
+            URL imageURL = new URI(imageNameArg).toURL();
+            InetAddress imageAddress = InetAddress.getByName(imageURL.getHost());
+
+            if (imageAddress.isLoopbackAddress() || imageAddress.isSiteLocalAddress()) {
+                return false;
+            }
+            if (!java.util.Arrays.asList(allowedSchemes).contains(imageURL.getProtocol())) {
+                return false;
+            }
+        } catch (MalformedURLException | URISyntaxException | UnknownHostException | IllegalArgumentException e) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void execute(Player player, String label, String[] args) {
 
         ImageSupplier imageSupplier;
         Supplier<String> nameSupplier;
         String imageNameArg = args[0];
-        if (URL_TEST.test(imageNameArg)) {
+
+        if (isValidImageURL(imageNameArg)) {
 
             AtomicReference<String> fileName = new AtomicReference<>();
             imageSupplier = () -> {
