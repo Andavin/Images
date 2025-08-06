@@ -26,6 +26,20 @@ package com.andavin.images.command;
 import com.andavin.images.Images;
 import com.andavin.images.image.CustomImage;
 import com.andavin.util.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -38,20 +52,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.net.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import java.util.regex.Pattern;
-
 import static com.andavin.util.MinecraftVersion.v1_13;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -62,8 +62,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 final class CreateCommand extends BaseCommand implements Listener {
 
+    private static final Pattern URL_TEST = Pattern.compile("^(https?|ftps?)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]");
     private final Map<UUID, CreateImageTask> creating = new HashMap<>();
-    private final String[] allowedSchemes = {"http", "https", "ftp", "ftps"};
 
     CreateCommand() {
         super("create", "images.command.create");
@@ -74,53 +74,29 @@ final class CreateCommand extends BaseCommand implements Listener {
         Bukkit.getPluginManager().registerEvents(this, Images.getInstance());
     }
 
-    /**
-     * Check if the given string is a valid image URL.
-     * This method verifies that the URL is well-formed, uses an allowed scheme
-     * (http, https, ftp, ftps), and does not point to a loopback or local address.
-     *
-     * @param imageNameArg The string to check as a potential image URL.
-     * @return {@code true} if the string is a valid, non-local image URL with an allowed scheme,
-     *         {@code false} otherwise.
-     */
-    private boolean isValidImageURL(String imageNameArg) {
-        try {
-            URL imageURL = new URI(imageNameArg).toURL();
-            InetAddress imageAddress = InetAddress.getByName(imageURL.getHost());
-
-            if (imageAddress.isLoopbackAddress() || imageAddress.isSiteLocalAddress()) {
-                return false;
-            }
-            if (!java.util.Arrays.asList(allowedSchemes).contains(imageURL.getProtocol())) {
-                return false;
-            }
-        } catch (MalformedURLException | URISyntaxException | UnknownHostException | IllegalArgumentException e) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public void execute(Player player, String label, String[] args) {
 
         ImageSupplier imageSupplier;
         Supplier<String> nameSupplier;
         String imageNameArg = args[0];
-
-        if (isValidImageURL(imageNameArg)) {
+        if (player.hasPermission("images.command.create.url") && URL_TEST.matcher(imageNameArg).matches()) {
 
             AtomicReference<String> fileName = new AtomicReference<>();
             imageSupplier = () -> {
-                URI uri = new URI(imageNameArg);
+                URL url = new URI(imageNameArg).toURL();
+                InetAddress addr = InetAddress.getByName(url.getHost());
+                checkArgument(!addr.isAnyLocalAddress() && !addr.isLoopbackAddress() && !addr.isSiteLocalAddress(),
+                        "invalid local URL: %s", imageNameArg);
                 int slash = imageNameArg.lastIndexOf('/');
                 fileName.set(slash == -1 ? imageNameArg :
                         imageNameArg.substring(slash + 1));
-                return ImageIO.read(uri.toURL());
+                return ImageIO.read(url);
             };
 
             nameSupplier = fileName::get;
         } else {
-            File imageFile = Images.getImageFile(imageNameArg);
+            File imageFile = Images.findImageFile(imageNameArg);
             imageSupplier = () -> ImageIO.read(imageFile);
             nameSupplier = imageFile::getName;
         }
@@ -146,7 +122,7 @@ final class CreateCommand extends BaseCommand implements Listener {
         UUID id = player.getUniqueId();
         this.creating.put(id, new CreateImageTask(scale, imageSupplier, nameSupplier));
         Scheduler.repeatAsyncWhile(() -> ActionBarUtil.sendActionBar(player,
-                "§eRight Click to place§7 - §eLeft Click to cancel"),
+                        "§eRight Click to place§7 - §eLeft Click to cancel"),
                 5L, 20L, () -> this.creating.containsKey(id));
     }
 
