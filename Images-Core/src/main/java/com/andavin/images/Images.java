@@ -341,12 +341,6 @@ public class Images extends JavaPlugin implements Listener {
      *                               image directory.
      */
     public static File getImageFile(String fileName) throws IllegalArgumentException, IllegalStateException {
-
-        File imageFile = new File(imagesDirectory, fileName);
-        if (imageFile.exists()) {
-            return imageFile;
-        }
-
         File match = null;
         File[] imageFiles = imagesDirectory.listFiles();
         checkState(imageFiles != null, "§cNo available images");
