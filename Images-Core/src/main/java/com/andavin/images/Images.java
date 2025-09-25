@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -89,6 +90,7 @@ public class Images extends JavaPlugin implements Listener {
     private static Images instance;
     private static File imagesDirectory;
     private static DataManager dataManager;
+    private static YamlConfiguration messages;
     private static final List<CustomImage> IMAGES = new ArrayList<>();
     private static final Map<UUID, Long> LAST_MOVE_TIMES = new HashMap<>();
     private static final PacketListener BRIDGE = Versioned.getInstance(PacketListener.class);
@@ -97,6 +99,7 @@ public class Images extends JavaPlugin implements Listener {
     @Override
     public void onLoad() {
         instance = this;
+        Images.loadMessages();
         Logger.initialize(this.getLogger());
         imagesDirectory = this.getDataFolder();
         PacketListener.getImages = () -> IMAGES;
@@ -275,6 +278,27 @@ public class Images extends JavaPlugin implements Listener {
     }
 
     /**
+     * Load messages from the messages.yml file.
+     */
+    private static void loadMessages() {
+        File messagesFile = new File(imagesDirectory, "messages.yml");
+        if (!messagesFile.exists()) {
+            instance.saveResource("messages.yml", false);
+        }
+        messages = YamlConfiguration.loadConfiguration(messagesFile);
+    }
+
+    /**
+     * Get a message from the messages.yml file.
+     *
+     * @param key The message key.
+     * @return The message string, or the key if not found.
+     */
+    public static String getMessage(String key) {
+        return messages.getString(key, key);
+    }
+
+    /**
      * Get the singleton instance of this plugin.
      *
      * @return The plugin instance.
@@ -373,7 +397,7 @@ public class Images extends JavaPlugin implements Listener {
                 if (fileName.startsWith(name) && file.isDirectory()) {
                     String trimmedFileName = fileName.substring(name.length() + 2); // Remove separator too
                     checkArgument(trimmedFileName.charAt(0) != '.',
-                            "§cInvalid image name: %s", fileName);
+                            getMessage("error-image-not-found").replace("{filename}", fileName));
                     return findImageFile(file, trimmedFileName);
                 }
             }
