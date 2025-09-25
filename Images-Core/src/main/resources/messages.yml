@@ -1,0 +1,69 @@
+###############################################################
+# +---------------------------------------------------------+ #
+# |                    Images Messages                      | #
+# +---------------------------------------------------------+ #
+###############################################################
+
+# General error messages
+error-player-only: "Sorry, /{command} is player only."
+error-no-images: "§cNo available images"
+error-image-not-found: "§cImage Not Found§f {filename}"
+error-unknown-command: "§cUnknown command§f {command}"
+error-map-create: "§cCannot create map. Unknown map data..."
+error-no-legacy: "§cNo legacy data file exists.\n§aThe§f data.yml§c file must be in the Images directory"
+
+# Create command
+create-invalid-scale: "§cInvalid scale §f{scale}"
+create-scale-small: "§cScale must be more than 1%, but got §f{scale}%"
+create-scale-zero: "§cScale must be greater than zero §f{scale}"
+create-instructions: "§eRight Click to place§7 - §eLeft Click to cancel"
+create-bad-direction: "§cUnsupported direction!"
+create-starting: "§aStarting image paste"
+create-bad-file: "§cInvalid image file! Please choose another."
+create-success: "§aSuccessfully created image§f {image-name}"
+create-failed: "§cFailed to create image at that location"
+create-cancelled: "§cCreation cancelled"
+
+# Delete command
+delete-no-permission: "§cInsufficient permission to modify that image"
+delete-success: "§aImage successfully deleted"
+delete-failed: "§cFailed to delete image"
+delete-cancelled: "§cDeletion cancelled"
+delete-instructions-old: "§eRight Click to delete§7 - §eLeft Click to cancel"
+delete-instructions-new: "§eRight Click to delete§7 - §eRerun Command to cancel"
+
+# Delete Near command
+delete-near-bad-range: "§cInvalid range: §f{range}"
+delete-near-range-small: "§cRange must be at least 1"
+delete-near-none-found: "§cNo images found in range of §f{range}"
+delete-near-success: "§aSuccessfully deleted §f{count}§a images within §f{range} blocks"
+delete-near-found-failed: "§cFound §f{total}§c nearby images"
+delete-near-partial: "§cbut only §f{success}§c were successfully deleted"
+delete-near-all-failed: "§cbut there was an issue deleting them"
+
+# List command
+list-header: "§a§lImage Options"
+list-empty: "§cNo images available"
+
+# Import command
+import-confirm: "§eAre you sure you want to import legacy images?\n§7This can not be undone unless you\n§ctake a backup of your world folder.\n§eRe-type the command to confirm"
+import-cooldown: "§cPlease wait 5 minutes before running that again."
+import-starting: "§aImporting legacy images.\n§eThis will cause sever lag. Please wait..."
+import-success: "§aSuccessfully imported §f{count}§a images"
+
+# Transfer command
+transfer-warning: "§cThis may overwrite any data in the {database-type} database\n§c§lThis will also stop the server"
+transfer-confirm: "§eRerun the command to confirm"
+transfer-mysql-exists: "§cAlready using MySQL. Please choose another..."
+transfer-sqlite-exists: "§cAlready using SQLite. Please choose another..."
+transfer-file-exists: "§cAlready using file data. Please choose another..."
+transfer-unknown-type: "§cUnknown database type §f{type}"
+transfer-try-other: "§7Try MySQL or SQLite"
+transfer-init: "§aInitializing new database..."
+transfer-saving: "§aSaving §f{count}§a to new database..."
+transfer-success: "§aSuccessfully transferred all images!"
+transfer-next-steps: "§eYou may now change the database configuration\n§eto the new database and restart your server"
+transfer-error: "§cAn error occurred while transferring!"
+transfer-mysql-help: "§eIf you are using MySQL ensure that it is configured properly."
+transfer-contact-dev: "§eOtherwise, contact the developer"
+transfer-shutdown: "§eShutting down in 5 seconds..."
