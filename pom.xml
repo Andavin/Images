@@ -35,6 +35,7 @@
         <module>Images-v1_21_R3</module>
         <module>Images-v1_21_R4</module>
         <module>Images-v1_21_R5</module>
+        <module>images-v1_21_R6</module>
     </modules>
     <packaging>pom</packaging>
 

@@ -376,7 +376,7 @@ public enum MinecraftVersion {
      */
     public enum MinorVersion {
 
-        R1, R2, R3, R4, R5;
+        R1, R2, R3, R4, R5, R6;
 
         /**
          * The current {@link MinorVersion} of this server.
@@ -421,7 +421,10 @@ public enum MinecraftVersion {
                     return "R4";
                 case "1.21.6":
                 case "1.21.7":
+                case "1.21.8":
                     return "R5";
+                case "1.21.9":
+                    return "R6";
                 default:
                     // NOTE: for future compatibility, we will default to the last version minor version
                     // This will definitely have issues on certain versions, but it will save others
