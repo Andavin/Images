@@ -440,6 +440,8 @@ public enum MinecraftVersion {
                 case "1.21.9":
                 case "1.21.10":
                     return "R6";
+                case "1.21.11":
+                    return "R7";
                 default:
                     // NOTE: for future compatibility, we will default to the last version minor version
                     // This will definitely have issues on certain versions, but it will save others
