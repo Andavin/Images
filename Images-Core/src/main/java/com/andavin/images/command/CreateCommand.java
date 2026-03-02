@@ -29,6 +29,8 @@ import com.andavin.util.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URL;
@@ -91,7 +93,7 @@ final class CreateCommand extends BaseCommand implements Listener {
                 int slash = imageNameArg.lastIndexOf('/');
                 fileName.set(slash == -1 ? imageNameArg :
                         imageNameArg.substring(slash + 1));
-                return ImageIO.read(url);
+                return readImageFromUrl(url);
             };
 
             nameSupplier = fileName::get;
@@ -279,6 +281,13 @@ final class CreateCommand extends BaseCommand implements Listener {
                 return null;
             }
         }
+    }
+
+    private static BufferedImage readImageFromUrl(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setInstanceFollowRedirects(true);
+        connection.setRequestProperty("Referer", url.getProtocol() + "://" + url.getHost() + "/");
+        return ImageIO.read(connection.getInputStream());
     }
 
     private interface ImageSupplier {
