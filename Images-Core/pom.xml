@@ -31,40 +31,6 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludes>
-                                        <exclude>module-info.class</exclude>
-                                        <exclude>META-INF/versions/*/module-info.class</exclude>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>junit:junit</artifact>
-                                    <excludes>
-                                        <exclude>org/hamcrest/**</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>com.mojang:authlib</artifact>
-                                    <excludes>
-                                        <exclude>com/mojang/authlib/yggdrasil/YggdrasilGameProfileRepository.class</exclude>
-                                    </excludes>
-                                </filter>
-                                <filter>
-                                    <artifact>com.mojang:brigadier</artifact>
-                                    <excludes>
-                                        <exclude>com/mojang/brigadier/CommandDispatcher.class</exclude>
-                                        <exclude>com/mojang/brigadier/tree/CommandNode.class</exclude>
-                                        <exclude>com/mojang/brigadier/CommandDispatcher$1.class</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
