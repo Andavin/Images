@@ -30,7 +30,6 @@ import com.andavin.reflect.exception.UncheckedNoSuchMethodException;
 import com.andavin.util.Scheduler;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
@@ -58,8 +57,6 @@ import static com.andavin.reflect.Reflection.*;
 class PacketListener extends com.andavin.images.PacketListener<ServerboundInteractPacket, ServerboundPickItemFromEntityPacket> {
 
     private static final Method TRY_PICK_ITEM;
-    private static final Field ENTITY_ID = findField(ServerboundInteractPacket.class, new FieldMatcher(int.class));
-    private static final Field ACTION = findField(ServerboundInteractPacket.class, 1, new FieldMatcher());
     private static final Field CONNECTION = findField(ServerCommonPacketListenerImpl.class, new FieldMatcher(Connection.class));
 
     static {
@@ -85,16 +82,8 @@ class PacketListener extends com.andavin.images.PacketListener<ServerboundIntera
 
     @Override
     protected void handle(Player player, ImageListener listener, ServerboundInteractPacket packet) {
-        int entityId = getFieldValue(ENTITY_ID, packet);
-        Object action = getFieldValue(ACTION, packet);
-        String actionName = action.getClass().getSimpleName();
-        if (actionName.equals("AttackAction")) {
-            call(player, entityId, InteractType.LEFT_CLICK, Hand.MAIN_HAND, listener);
-        } else if (actionName.equals("InteractionAction") || actionName.equals("InteractionAtLocationAction")) {
-            InteractionHand hand = getFieldValue(findField(action.getClass(), new FieldMatcher(InteractionHand.class)), action);
-            call(player, entityId, InteractType.RIGHT_CLICK,
-                    hand == InteractionHand.MAIN_HAND ? Hand.MAIN_HAND : Hand.OFF_HAND, listener);
-        }
+        Hand hand = packet.hand() == InteractionHand.MAIN_HAND ? Hand.MAIN_HAND : Hand.OFF_HAND;
+        call(player, packet.entityId(), InteractType.RIGHT_CLICK, hand, listener);
     }
 
     @Override
