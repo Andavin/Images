@@ -382,10 +382,13 @@ public enum MinecraftVersion {
         String bukkitVersion = server.getBukkitVersion();
         String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
         String[] versionParts = StringUtils.split(version, '.');
-        if (versionParts[0].equals("26")) {
+        if (versionParts[0].equals("1")) {
+            return 'v' + versionParts[0] + '_' + versionParts[1];
+        } else {
+            // NOTE: anything that doesn't start with "1" is the new
+            // year-based versioning scheme starting with "26"
             return 'v' + versionParts[0];
         }
-        return 'v' + versionParts[0] + '_' + versionParts[1];
     }
 
     /**
@@ -434,6 +437,9 @@ public enum MinecraftVersion {
             switch (version) {
                 case "1.21":
                 case "1.21.1":
+                case "26.1":
+                case "26.1.1":
+                case "26.1.2":
                     return "R1";
                 case "1.21.3":
                     return "R2";
@@ -452,10 +458,6 @@ public enum MinecraftVersion {
                     return "R6";
                 case "1.21.11":
                     return "R7";
-                case "26.1":
-                case "26.1.1":
-                case "26.1.2":
-                    return "R1";
                 default:
                     // NOTE: for future compatibility, we will default to the last version minor version
                     // This will definitely have issues on certain versions, but it will save others
