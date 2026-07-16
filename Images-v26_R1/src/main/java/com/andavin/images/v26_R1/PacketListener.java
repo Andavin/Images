@@ -31,6 +31,7 @@ import com.andavin.util.Scheduler;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -40,7 +41,6 @@ import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -131,7 +131,7 @@ class PacketListener extends com.andavin.images.PacketListener<ServerboundIntera
         } else {
             // NOTE: create an entity to prevent an NPE, but isn't the real entity
             // This may cause some plugins a minor confusion, but I think it'll be okay
-            ItemFrame frame = new ItemFrame(EntityType.ITEM_FRAME, level);
+            ItemFrame frame = new ItemFrame(level, BlockPos.ZERO, Direction.NORTH);
             invokeMethod(TRY_PICK_ITEM, connection, item, null, frame, true);
         }
     }
