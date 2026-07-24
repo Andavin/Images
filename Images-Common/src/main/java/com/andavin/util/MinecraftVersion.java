@@ -429,16 +429,10 @@ public enum MinecraftVersion {
                 return packageName.substring(minorIndex);
             }
 
-            String bukkitVersion = server.getBukkitVersion();
-            return matchVersion(bukkitVersion.substring(0, bukkitVersion.indexOf('-')));
+            return matchVersion(BukkitVersionParser.normalize(server.getBukkitVersion()));
         }
 
         private static String matchVersion(String version) {
-
-            if (version.endsWith(".build")) { // Paper experimental versions
-                version = version.substring(0, version.length() - ".build".length());
-            }
-
             switch (version) {
                 case "1.21":
                 case "1.21.1":
