@@ -198,6 +198,7 @@ public class Images extends JavaPlugin implements Listener {
         }
 
         Runnable intercept = () -> {
+            if (!player.isOnline()) {return;}
             BRIDGE.setEntityListener(player, (clicker, image, section, action, hand) -> {
 
                 ImageListener listener = LISTENER_TASKS.remove(clicker.getUniqueId());
