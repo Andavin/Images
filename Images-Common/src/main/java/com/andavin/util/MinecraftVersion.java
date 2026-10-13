@@ -434,13 +434,15 @@ public enum MinecraftVersion {
             }
 
             String bukkitVersion = server.getBukkitVersion();
-            return matchVersion(bukkitVersion.substring(0, bukkitVersion.indexOf('-')));
+            String version = bukkitVersion.substring(0, bukkitVersion.indexOf('-'));
+            return matchVersion(version, version);
         }
 
-        private static String matchVersion(String version) {
-            for (final String paperVersionSuffix : PAPER_VERSION_SUFFIXES) {
-                if (version.endsWith(paperVersionSuffix)) {
-                    version = version.substring(0, version.length() - paperVersionSuffix.length());
+        private static String matchVersion(String version, String original) {
+
+            for (String suffix : PAPER_VERSION_SUFFIXES) { // Paper experimental versions
+                if (version.endsWith(suffix)) {
+                    version = version.substring(0, version.length() - suffix.length());
                 }
             }
 
@@ -451,6 +453,7 @@ public enum MinecraftVersion {
                 case "26.1.1":
                 case "26.1.2":
                 case "26.2":
+                case "26.3":
                     return "R1";
                 case "1.21.3":
                     return "R2";
@@ -473,20 +476,18 @@ public enum MinecraftVersion {
                     // NOTE: for future compatibility, we will default to the last version minor version
                     // This will definitely have issues on certain versions, but it will save others
                     int lastDot = version.lastIndexOf('.');
-                    if (lastDot != version.indexOf('.')) { // Has at least 2 dots in the version
+                    if (lastDot != -1) { // Has at least 1 dot in the version
                         String patch = version.substring(lastDot + 1);
                         if (StringUtils.isNumeric(patch)) {
                             int previousPatch = Integer.parseInt(patch) - 1;
                             String previousVersion = previousPatch == 0 ?
                                     version.substring(0, lastDot) :
                                     version.substring(0, lastDot + 1) + previousPatch;
-                            Logger.warn("Unknown minor version for " + version +
-                                    " using " + previousVersion + ". Report this if you have issues.");
-                            return matchVersion(previousVersion);
+                            return matchVersion(previousVersion, original);
                         }
                     }
 
-                    throw new UnsupportedOperationException("unknown minor version for " + version);
+                    throw new UnsupportedOperationException("unknown minor version for " + original);
             }
         }
     }
