@@ -193,6 +193,10 @@ public enum MinecraftVersion {
      */
     public static final MinecraftVersion CURRENT;
     private static final boolean PAPER;
+    private static final String[] PAPER_VERSION_SUFFIXES = {
+        ".build", // for incremental builds of paper
+        ".local" // for locally built jars
+    };
 
     static {
 
@@ -434,9 +438,10 @@ public enum MinecraftVersion {
         }
 
         private static String matchVersion(String version) {
-
-            if (version.endsWith(".build")) { // Paper experimental versions
-                version = version.substring(0, version.length() - ".build".length());
+            for (final String paperVersionSuffix : PAPER_VERSION_SUFFIXES) {
+                if (version.endsWith(paperVersionSuffix)) {
+                    version = version.substring(0, version.length() - paperVersionSuffix.length());
+                }
             }
 
             switch (version) {
